@@ -1,0 +1,272 @@
+ TODO:
+ - figure out tables design to track the number of followers a user has
+ -----------TABLES----------------
+UsersTable
+	- id
+		- int
+		- key
+		- auto-increment
+	- name
+		- required
+		- varchar(20)
+	- email
+		- required
+		- varchar(200)
+	- password
+		- required
+		- varchar(12)
+	- role
+		- required
+		- default to freeAccountUser
+	- bio
+		- varchar(160)
+
+UserRolesTable
+	- id
+		- int
+		- key
+		- auto-increment
+	- name
+		-varchar(15)
+		-possible values:
+			- freeAccountUser
+			- paidAccountUser
+			- admin
+
+TweetsTable
+	- ID // -key -auto
+	- content
+		- varchar(280)
+	- LikedCount
+		- int
+	- CreationDTG DateTime
+
+RetweetTable
+	- ID // -key -auto
+	- OriginalTweetID
+		- foreign key
+		- required
+	- RetweetedDTG DateTime
+
+CommentsTable
+	- ID
+		- int
+		- key
+		- auto-increment
+	- content
+		- required
+		- varchar(280)
+	- OriginalTweetID
+		- required
+		- int
+		- foreign key
+
+LikesTable
+	- ID
+		- int
+		- key
+		- auto-increment
+	- LikedTweetId
+		- int
+		- required
+		- foreign key
+	- UserThatLikedTheTweetId
+		- int
+		- requird
+		- foreign key
+
+FollowsTable
+	- FollowId
+		- int
+		- key
+		- auto-increment
+	- FollowedUserId: the user that is being followed
+		- int
+		- required
+		- foreign key
+	- FollowerId: user that followed the FollowedUser
+		- int
+		- requird
+		- foreign key
+		
+-----------PAGES----------------
+Register
+	- Displays:
+		- Username input
+		- Email Input
+		- Password input
+		- Confirm Password input
+	- ViewModelData:
+		- Username
+			- required
+			- maxLength: 20
+		- Email
+			- maxLength: 200
+			- minLength: 5
+			- Required
+			- REGEX:
+				public static bool IsValidEmail(string email)
+				{
+					return Regex.IsMatch(email, @"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+				}
+		- Password
+			- required
+			- maxLength: 12
+			- minLength: 8
+				[ValidatePassword(RegularExpression = @"^. *(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[^\da-zA-Z]).*$")]
+				public string Password { get; set; }
+	- Controller Methods
+		- ValidateEmailFormat
+		- validatePasswordComplexity: 
+			- maxLength(12) 
+			- minLength(8)
+			- at least 1 special char
+			- at least 1 letter
+			- at least 1 capital letter
+		- CreateUser:
+			- calls DB to insert the new user
+		- RedirectToLoginPage:
+			- called after successful registration
+ 
+Login
+	- Displays:
+		- Username input
+		- password input
+	- ViewModelData:
+		- Username
+		- Password
+	- Controller Methods:
+		- ValidateEmailFormat
+		- ValidatePasswordFormat
+		- Login
+			- uses validated user input to retrieve user from the DB
+		- RedirectToFeedPage
+			- called upon successful login
+ 
+Profile
+	- Displays:
+		- name
+		- profile picture
+		- bio
+		- number of followers
+		- Tweets
+		- Liked tweets
+		- Retweeted Tweets
+		- Follow Button // only displays if user if viewing another user's profile
+	- ViewModelData:
+		- Username
+		- Password
+			[ValidatePassword(RegularExpression = @"^. *(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[^\da-zA-Z]).*$")]
+			public string Password { get; set; }
+		- ProfilePicture
+		- Bio
+		- number of followers
+		- List<Tweets>
+		- List<LikedTweets>
+		- List<RetweetedTweets>
+	- Controller Methods:
+		- changeUserName
+		- changePassword
+		- validatePasswordComplexity: 
+			- maxLength(12) 
+			- minLength(8)
+			- at least 1 special char
+			- at least 1 lowercase letter
+			- at least 1 capital letter
+				public static bool IsValidPassword(string password)
+				{
+					// Check the length of the password
+					if (password.Length < 8 || password.Length > 12)
+					{
+						return false;
+					}
+
+					// Check for special characters
+					bool hasSpecialCharacter = false;
+					for (int i = 0; i < password.Length; i++)
+					{
+						char c = password[i];
+						if (!char.IsLetterOrDigit(c) && c != ' ')
+						{
+							hasSpecialCharacter = true;
+							break;
+						}
+					}
+
+					if (!hasSpecialCharacter)
+					{
+						return false;
+					}
+
+					// Check for lower case letters
+					bool hasLowerCaseLetter = false;
+					for (int i = 0; i < password.Length; i++)
+					{
+						char c = password[i];
+						if (char.IsLower(c))
+						{
+							hasLowerCaseLetter = true;
+							break;
+						}
+					}
+
+					if (!hasLowerCaseLetter)
+					{
+						return false;
+					}
+
+					// Check for capital letters
+					bool hasCapitalLetter = false;
+					for (int i = 0; i < password.Length; i++)
+					{
+						char c = password[i];
+						if (char.IsUpper(c))
+						{
+							hasCapitalLetter = true;
+							break;
+						}
+					}
+
+					if (!hasCapitalLetter)
+					{
+						return false;
+					}
+
+					return true;
+				}
+		- changeProfilePicture
+		- changeBio
+		- follow // allows current user to or unfollow another user.
+
+Feed
+	- Displays:
+		- List<Tweets> + List<FollowedTweets> // sorted in chronological order.
+		- "Heart" icon below the tweet // used for likes
+				The number of likes for a tweet will be displayed next to the icon.
+		- "Comment Icon"
+				Allows user to comment on a tweet
+				A modal will popup, allowing the user to type and submit their comment.
+				The number of comments for a tweet will be displayed next to the icon
+		- "Retweet Icon"
+				Users can share a tweet by clicking on a "retweet" icon below the tweet.
+				The number of retweets for a tweet will be displayed next to the icon.
+	- ViewModel Data:
+		- List<Tweets>
+			- Each tweet needs a property for its nubmer of likes
+		- List<FollowedTweets>
+		- (TBD) List<Tweets> + List<FollowedTweets>
+	- Controler Methods:
+		- CreateNewTweet
+				Users can create a new tweet by clicking on a text box at the top of the feed.
+				The tweet character limit will be 100 characters, similar to Twitter.
+				After composing a tweet, users can click on the "Tweet" button to post it, and it will appear in their feed and the feeds of their followers.
+		- LikeTweet
+				Users can like a tweet by clicking on the "heart" icon below the tweet.
+				The number of likes for a tweet will be displayed next to the icon.
+		- Comment
+				Users can comment on a tweet by clicking on the "comment" icon below the tweet.
+				A modal will pop up, allowing users to type and submit their comments.
+				The number of comments for a tweet will be displayed next to the icon.
+		- ReTweet
+				Users can share a tweet by clicking on a "retweet" icon below the tweet.
+				The number of retweets for a tweet will be displayed next to the icon.
