@@ -45,6 +45,8 @@ namespace brian.worsham.twitter.clone2.Models
         [StringLength(160)]
         [Unicode(false)]
         public string Bio { get; set; }
+        [StringLength(255)]
+        public string ProfilePictureURL { get; set; }
 
         [InverseProperty("User")]
         public virtual ICollection<AspNetUserClaims> AspNetUserClaims { get; set; }
