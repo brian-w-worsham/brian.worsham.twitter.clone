@@ -5,7 +5,8 @@ UsersTable
 	- id
 		- int
 		- key
-		- auto-increment
+		- auto
+		- required
 	- name
 		- required
 		- varchar(20)
@@ -15,44 +16,49 @@ UsersTable
 	- password
 		- required
 		- varchar(12)
-	- role
-		- required
-		- default to freeAccountUser
 	- bio
 		- varchar(160)
 
-UserRolesTable
-	- id
-		- int
-		- key
-		- auto-increment
-	- name
-		-varchar(15)
-		-possible values:
-			- freeAccountUser
-			- paidAccountUser
-			- admin
-
 TweetsTable
-	- ID // -key -auto
+	- Id
+		- required
+		- key
+		- auto
+		- int
 	- content
 		- varchar(280)
-	- LikedCount
-		- int
+		- required
 	- CreationDTG DateTime
+		- required
+	- TweeterId
+		- int
+		- foreign key
+		- required
 
-RetweetTable
-	- ID // -key -auto
+RetweetsTable
+	- ID
+		- key
+		- auto
+		- int
+		- required
 	- OriginalTweetID
 		- foreign key
 		- required
-	- RetweetedDTG DateTime
+		- int
+	- RetweetedDTG
+		- DateTime
+		- required
+	- RetweeterId
+		- foreign key
+		- required
+		- int
 
 CommentsTable
 	- ID
 		- int
 		- key
-		- auto-increment
+		- auto
+		- required
 	- content
 		- required
 		- varchar(280)
@@ -60,33 +66,39 @@ CommentsTable
 		- required
 		- int
 		- foreign key
+	- CommenterId
+		- foreign key
+		- required
+		- int
 
 LikesTable
 	- ID
 		- int
 		- key
 		- auto-increment
+		- required
 	- LikedTweetId
 		- int
 		- required
 		- foreign key
 	- UserThatLikedTheTweetId
 		- int
-		- requird
+		- required
 		- foreign key
 
 FollowsTable
-	- FollowId
+	- Id
 		- int
 		- key
 		- auto-increment
+		- required
 	- FollowedUserId: the user that is being followed
 		- int
 		- required
 		- foreign key
 	- FollowerId: user that followed the FollowedUser
 		- int
-		- requird
+		- required
 		- foreign key
 		
 -----------PAGES----------------
