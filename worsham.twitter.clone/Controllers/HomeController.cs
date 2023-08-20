@@ -22,7 +22,7 @@ namespace worsham.twitter.clone.Controllers
             }
             else
             {
-                return View("Unauthenticated");
+                return View();
             }
         }
 
