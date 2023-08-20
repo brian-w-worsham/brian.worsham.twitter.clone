@@ -15,7 +15,15 @@ namespace worsham.twitter.clone.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            bool IsAuthenticated = false;
+            if (IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Tweets");
+            }
+            else
+            {
+                return View("Unauthenticated");
+            }
         }
 
         public IActionResult Privacy()
