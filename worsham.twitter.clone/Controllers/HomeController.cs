@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using worsham.twitter.clone.Models;
 
@@ -6,14 +7,16 @@ namespace worsham.twitter.clone.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly TwitterCloneContext _context;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(TwitterCloneContext context, ILogger<HomeController> logger)
         {
+            _context = context;
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             bool IsAuthenticated = false;
             if (IsAuthenticated)
@@ -22,7 +25,7 @@ namespace worsham.twitter.clone.Controllers
             }
             else
             {
-                return View();
+                return View(model: new Users());
             }
         }
 

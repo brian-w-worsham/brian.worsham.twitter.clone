@@ -1,79 +1,45 @@
-﻿
+﻿@model worsham.twitter.clone.Models.Users
 
-@{
-    string passwordRegex = "^(?=.*[A-Z])(?=.*[!@#$&*]).{8,12}$";
-}
-
-<div class="modal fade create-account" id="createAccountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade create-account" id="createAccountModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header d-flex justify-content-start border-bottom-0">
                 <button type="button" class="btn-close mx-0" data-bs-dismiss="modal" aria-label="Close"></button>
-                <h5 class="modal-title" id="exampleModalLabel">Step 1 of 5</h5>
             </div>
             <div class="modal-body">
                 <h2>Create your Account</h2>
             </div>
             <div class="container">
-                <form asp-controller="Account" asp-action="Create" method="post">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" maxlength="20" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email address</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
 
-                        <input type="password" class="form-control" id="password" name="password" minlength="8" maxlength="12" pattern="@passwordRegex" required>
+
+                <form asp-controller="Users" asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="UserName" class="control-label"></label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
                     </div>
-                    <button type="submit" class="btn btn-primary">Create Account</button>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="control-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Bio" class="control-label"></label>
+                        <input asp-for="Bio" class="form-control" />
+                        <span asp-validation-for="Bio" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary m-2">Create Account</button>
+                    </div>                    
                 </form>
 
-                @* <form class="row">
-                <div class="col mx-5">
-                <div class="mb-3">
-                <label for="inputName" class="form-label">Name</label>
-                <input type="text" class="form-control" id="inputName">
-                </div>
-                <div class="mb-3">
-                <label for="inputEmail" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="inputEmail">
-                </div>
-                <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
-                <input type="password" class="form-control" id="inputPassword">
-                </div>
-                <div class="disclaimer mb-5" style="color: #536471;">
-                By signing up, you agree to the
-                <a href="https://twitter.com/tos" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
-                <span class="text-wrap">Terms of Service</span>
-                </a>
-                and
-                <a href="https://twitter.com/privacy" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
-                <span class="text-wrap">Privacy Policy</span>
-                </a>
-                , including
-                <a href="https://help.twitter.com/rules-and-policies/twitter-cookies" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
-                <span class="text-wrap">Cookie Use.</span>
-                </a>
-                <span>Twitter may use your contact information, including your email address and phone number for purposes outlined in our Privacy Policy, like keeping your account secure and personalizing our services, incliding ads.</span>
-                <a href="https://twitter.com/en/privacy" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
-                <span class="text-wrap">Learn more.</span>
-                </a>
-                <span>Others will be able to find you by email or phone number, when provided, unless you choose otherwise </span>
-                <a href="#" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
-                <span class="text-wrap">here.</span>
-                </a>
-                </div>
-                <div class="modal-footer">
-                <button type="submit" class="btn btn-primary fw-bold">Sign up</button>
-                </div>
 
-                </div>
-                </form> *@
             </div>
         </div>
     </div>
