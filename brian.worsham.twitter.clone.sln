@@ -5,11 +5,7 @@ VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brian.worsham.twitter.clone", "brian.worsham.twitter.clone\brian.worsham.twitter.clone.csproj", "{44084743-CFD4-4CAF-A701-73D0E73D90CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brian.worsham.twitter.clone2", "brian.worsham.twitter.clone2\brian.worsham.twitter.clone2.csproj", "{5E38DA28-4119-4257-96BC-6C1F85AB2BD2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "b.worsham.twitter.clone", "b.worsham.twitter.clone\b.worsham.twitter.clone.csproj", "{939D60D9-35F6-46EF-B7BB-2CE84CE5141D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "worsham.twitter.clone", "worsham.twitter.clone\worsham.twitter.clone.csproj", "{E08DB4DA-307A-4483-840E-52C29B39CB8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "worsham.twitter.clone", "worsham.twitter.clone\worsham.twitter.clone.csproj", "{E08DB4DA-307A-4483-840E-52C29B39CB8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +17,6 @@ Global
 		{44084743-CFD4-4CAF-A701-73D0E73D90CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44084743-CFD4-4CAF-A701-73D0E73D90CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44084743-CFD4-4CAF-A701-73D0E73D90CF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E38DA28-4119-4257-96BC-6C1F85AB2BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E38DA28-4119-4257-96BC-6C1F85AB2BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E38DA28-4119-4257-96BC-6C1F85AB2BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E38DA28-4119-4257-96BC-6C1F85AB2BD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{939D60D9-35F6-46EF-B7BB-2CE84CE5141D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{939D60D9-35F6-46EF-B7BB-2CE84CE5141D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{939D60D9-35F6-46EF-B7BB-2CE84CE5141D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{939D60D9-35F6-46EF-B7BB-2CE84CE5141D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E08DB4DA-307A-4483-840E-52C29B39CB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E08DB4DA-307A-4483-840E-52C29B39CB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E08DB4DA-307A-4483-840E-52C29B39CB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU

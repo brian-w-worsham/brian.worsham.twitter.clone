@@ -7,5 +7,6 @@ namespace worsham.twitter.clone.Services
         Task<Users> AuthenticateUser(string username, string password);
         Task<Users> RegisterUser(Users user, string password);
         void LogoutUser(HttpContext httpContext);
+        Task<bool> IsUsernameTaken(string username);
     }
 }

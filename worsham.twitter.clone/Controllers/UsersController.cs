@@ -15,19 +15,21 @@ namespace worsham.twitter.clone.Controllers
         private readonly TwitterCloneContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthenticationService _authenticationService;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService)
+        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger)
         {
             _context = context;
             _authenticationService = authenticationService;
+            _logger = logger;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-              return _context.Users != null ? 
-                          View(await _context.Users.ToListAsync()) :
-                          Problem("Entity set 'TwitterCloneContext.Users'  is null.");
+            return _context.Users != null ?
+                        View(await _context.Users.ToListAsync()) :
+                        Problem("Entity set 'TwitterCloneContext.Users'  is null.");
         }
 
         // GET: Users/Details/5
@@ -63,10 +65,47 @@ namespace worsham.twitter.clone.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _authenticationService.RegisterUser(user, user.Password);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    bool isUsernameTaken = await _authenticationService.IsUsernameTaken(user.UserName);
+
+                    if (isUsernameTaken)
+                    {
+                        ModelState.AddModelError("UserName", "This username is already taken.");
+                        return View(user);
+                    }
+
+                    await _authenticationService.RegisterUser(user, user.Password);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException ex)
+                {
+                    _logger.LogError(ex, "An error occurred while registering a user.");
+                    // Check if the exception message indicates a unique constraint violation
+                    if (IsUniqueConstraintViolation(ex))
+                    {
+                        ModelState.AddModelError("UserName", "This username is already taken.");
+                        // Log the unique constraint violation
+                        _logger.LogWarning("Attempt to register with a non-unique username: {Username}", user.UserName);
+
+                        return View(user);
+                    }
+                    else
+                    {
+                        // Handle other exceptions as needed
+                        throw;
+                    }
+                }
+
             }
             return View(user);
+        }
+
+        private bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            // Check if the exception message or inner exception message indicates a unique constraint violation
+            return ex.InnerException?.Message.Contains("IX_Users_UserName") == true ||
+                   ex.Message.Contains("IX_Users_UserName");
         }
 
         // GET: Users/Edit/5
@@ -152,14 +191,14 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.Users.Remove(users);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool UsersExists(int id)
         {
-          return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
         [HttpGet]

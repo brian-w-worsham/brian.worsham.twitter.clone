@@ -100,9 +100,9 @@ namespace worsham.twitter.clone.Models
 
             modelBuilder.Entity<Users>(entity =>
             {
-                entity.Property(e => e.ProfilePictureUrl)
-                .HasMaxLength(300)
-                .IsUnicode(false);
+                entity.Property(e => e.ProfilePictureUrl).HasMaxLength(300).IsUnicode(false);
+                entity.Property(e => e.UserName).IsRequired().HasMaxLength(20).IsUnicode(false);
+                entity.HasIndex(e => e.UserName).IsUnique();
             });
 
             OnModelCreatingPartial(modelBuilder);

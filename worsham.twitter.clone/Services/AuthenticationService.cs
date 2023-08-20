@@ -143,11 +143,12 @@ namespace worsham.twitter.clone.Services
                 throw new Exception("Password is required");
             }
 
-
-            if (await _context.Users.AnyAsync(x => x.UserName == user.UserName))
+            // Check if the username is already taken
+            bool isUsernameTaken = await IsUsernameTaken(user.UserName);
+            if (isUsernameTaken)
             {
                 _logger.LogWarning("User registration failed. Username {Username} is already taken.", user.UserName);
-                throw new Exception("Username \"" + user.UserName + "\" is already taken");
+                throw new InvalidOperationException($"Username \"{user.UserName}\" is already taken");
             }
 
 
@@ -156,6 +157,28 @@ namespace worsham.twitter.clone.Services
                 _logger.LogWarning("User registration failed. Email {Email} is already taken.", user.Email);
                 throw new Exception("Email \"" + user.Email + "\" is already taken");
             }
+        }
+
+        /// <summary>
+        /// Checks if a username is already taken by an existing user.
+        /// </summary>
+        /// <param name="username">The username to check for availability.</param>
+        /// <returns>
+        /// True if the username is already taken; otherwise, false.
+        /// </returns>
+        /// <remarks>
+        /// This method queries the database to determine if the provided username
+        /// is already associated with an existing user. It returns true if the username
+        /// is found, indicating that the username is not available for registration.
+        /// Otherwise, it returns false, indicating that the username is available.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if the provided username is null or empty.
+        /// </exception>
+        /// <seealso cref="RegisterUser(Users, string)"/>
+        public async Task<bool> IsUsernameTaken(string username)
+        {
+            return await _context.Users.AnyAsync(u => u.UserName == username);
         }
 
         /// <summary>
