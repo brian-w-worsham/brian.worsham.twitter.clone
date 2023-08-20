@@ -64,8 +64,6 @@ namespace worsham.twitter.clone.Controllers
             if (ModelState.IsValid)
             {
                 await _authenticationService.RegisterUser(user, user.Password);
-                //_context.Add(user);
-                //await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
