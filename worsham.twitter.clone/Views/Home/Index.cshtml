@@ -1,3 +1,51 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Twitter. It’s what’s happening / X";
 }
+
+<partial name="_CreateAccountModal" />
+
+<div class="container col-xl-10 col-xxl-8 px-4 py-5 d-grid height-full">
+    <div class="row align-items-center g-lg-5 py-5">
+        <div class="col">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g>
+            </svg>
+        </div>
+        <div class="col col-happening-now">
+            <div class="mb-4">
+                <h1 class="fw-bold lh-1">Happening now</h1>
+            </div>
+            <div class="join-today text-left">
+                <span class="fw-bold text-left">Join today.</span>
+            </div>
+            <div class="d-grid gap-2 col-6">
+                <button id="btnCreateAccount" type="button" class="btn rounded-pill fw-bold create-account" data-bs-toggle="modal" data-bs-target="#createAccountModal" autocomplete="off">Create account</button>
+                <div class="disclaimer mb-5" style="color: #536471;">
+                    By signing up, you agree to the
+                    <a href="https://twitter.com/tos" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
+                        <span class="text-wrap">Terms of Service</span>
+                    </a>
+                    and
+                    <a href="https://twitter.com/privacy" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
+                        <span class="text-wrap">Privacy Policy</span>
+                    </a>
+                    , including
+                    <a href="https://help.twitter.com/rules-and-policies/twitter-cookies" rel="noopener noreferrer nofollow" target="_blank" role="link" class="text-decoration-none" style="color: rgb(29, 155, 240);">
+                        <span class="text-wrap">Cookie Use.</span>
+                    </a>
+                </div>
+
+                <div dir="ltr" class="mb-3">
+                    <span class="fw-bold lbl-existing-account">Already have an account?</span>
+                </div>
+
+                <a role="link" class="btn btn-outline-primary rounded-pill fw-bold sign-in" data-bs-toggle="button" autocomplete="off" asp-area="Identity" asp-page="/Account/Login">
+                    <div dir="ltr" class="text">
+                        <span class="">Sign in</span>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
