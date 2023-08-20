@@ -18,7 +18,7 @@ namespace worsham.twitter.clone.Controllers
             bool IsAuthenticated = false;
             if (IsAuthenticated)
             {
-                return View();
+                return RedirectToAction("Index", "Tweets");
             }
             else
             {
