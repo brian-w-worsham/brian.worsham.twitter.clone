@@ -219,7 +219,7 @@ namespace worsham.twitter.clone.Controllers
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("UserName", user.UserName);
 
-                return RedirectToAction("Index", "Home"); // Redirect to the home page
+                return RedirectToAction("Index", "Tweets"); // Redirect to the feed page after login
             }
             else
             {

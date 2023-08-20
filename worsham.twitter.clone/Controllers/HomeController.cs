@@ -16,15 +16,22 @@ namespace worsham.twitter.clone.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Displays the landing page or redirects to the Tweets page based on the user's authentication status.
+        /// </summary>
+        /// <returns>An <see cref="IActionResult"/> representing the landing page or a redirection to the Tweets page.</returns>
         public async Task<IActionResult> Index()
         {
-            bool IsAuthenticated = false;
-            if (IsAuthenticated)
+            // Check if the user is authenticated based on the presence of the "UserId" in the session
+            bool isAuthenticated = HttpContext.Session.GetInt32("UserId") != null;
+            if (isAuthenticated)
             {
+                _logger.LogInformation("User is authenticated. Redirecting to Tweets.");
                 return RedirectToAction("Index", "Tweets");
             }
             else
             {
+                _logger.LogInformation("User is not authenticated. Displaying the landing page.");
                 return View(model: new Users());
             }
         }

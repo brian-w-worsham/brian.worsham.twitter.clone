@@ -5,6 +5,7 @@
 }
 
 <partial name="_CreateAccountModal" />
+<partial name="_LoginModal" />
 
 <div class="container col-xl-10 col-xxl-8 px-4 py-5 d-grid height-full">
     <div class="row align-items-center g-lg-5 py-5">
@@ -36,17 +37,10 @@
                         <span class="text-wrap">Cookie Use.</span>
                     </a>
                 </div>
-
                 <div dir="ltr" class="mb-3">
                     <span class="fw-bold lbl-existing-account">Already have an account?</span>
                 </div>
-
-                <a role="link" class="btn btn-outline-primary rounded-pill fw-bold sign-in" data-bs-toggle="button" autocomplete="off" asp-area="Identity" asp-page="/Account/Login">
-                    <div dir="ltr" class="text">
-                        <span class="">Sign in</span>
-                    </div>
-                </a>
-
+                <button id="btnSignIn" type="button" class="btn btn-outline-primary rounded-pill fw-bold sign-in" data-bs-toggle="modal" data-bs-target="#loginModal" autocomplete="off">Sign in</button>
             </div>
         </div>
     </div>

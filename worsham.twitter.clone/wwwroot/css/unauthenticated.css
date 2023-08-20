@@ -79,13 +79,13 @@ div.join-today {
         float: left;
     }
 
-button.btn.create-account {
+button.btn.create-account, button.btn.login {
     border-color: rgba(0, 0, 0, 0);
     background-color: rgb(29, 155, 240);
     color: #fff;
 }
 
-    button.btn.create-account:focus, a.create-account:hover {
+    button.btn.create-account:focus, a.create-account:hover, button.btn.login:focus, a.login:hover {
         outline: none;
         color: #fff;
         background-color: #1b8cd8;
@@ -99,12 +99,12 @@ div.disclaimer {
     font-size: 1.133333333333333rem;
 }
 
-a.sign-in {
+button.sign-in {
     border-color: #ced4da;
     color: #2599e6;
 }
 
-    a.sign-in:hover, a.sign-in:focus {
+    button.sign-in:hover, button.sign-in:focus {
         background-color: #e8f5fd;
         border-color: #ced4da;
         color: #2599e6;
