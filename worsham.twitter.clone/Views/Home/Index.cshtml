@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Twitter. It’s what’s happening / X";
 }
+<script>
+    var didUserRegister = '@ViewData["DidUserRegister"]' === 'True';
+</script>
 
 <partial name="_CreateAccountModal" />
 <partial name="_LoginModal" />
@@ -45,3 +48,4 @@
         </div>
     </div>
 </div>
+<script src="~/js/landingPage.js" asp-append-version="true"></script>
