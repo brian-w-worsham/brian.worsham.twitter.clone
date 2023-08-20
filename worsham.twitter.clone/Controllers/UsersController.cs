@@ -6,16 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
     public class UsersController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAuthenticationService _authenticationService;
 
-        public UsersController(TwitterCloneContext context)
+        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService)
         {
             _context = context;
+            _authenticationService = authenticationService;
         }
 
         // GET: Users
@@ -55,15 +59,16 @@ namespace worsham.twitter.clone.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users users)
+        public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(users);
-                await _context.SaveChangesAsync();
+                await _authenticationService.RegisterUser(user, user.Password);
+                //_context.Add(user);
+                //await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(users);
+            return View(user);
         }
 
         // GET: Users/Edit/5
@@ -157,6 +162,40 @@ namespace worsham.twitter.clone.Controllers
         private bool UsersExists(int id)
         {
           return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(string userName, string password)
+        {
+            var user = await _authenticationService.AuthenticateUser(userName, password);
+
+            if (user != null)
+            {
+                // Authentication successful
+                // Set up the session here
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("UserName", user.UserName);
+
+                return RedirectToAction("Index", "Home"); // Redirect to the home page
+            }
+            else
+            {
+                ModelState.AddModelError("", "Invalid credentials");
+                return View();
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            _authenticationService.LogoutUser(_httpContextAccessor.HttpContext);
+            return RedirectToAction("Index", "Home"); // Redirect to the home page after logout
         }
     }
 }

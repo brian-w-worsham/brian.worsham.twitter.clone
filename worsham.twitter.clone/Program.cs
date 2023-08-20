@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone
 {
@@ -13,9 +14,22 @@ namespace worsham.twitter.clone
             var connectionString = builder.Configuration.GetConnectionString("TwitterCloneConnectionString") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<TwitterCloneContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            app.UseSession();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

@@ -98,6 +98,13 @@ namespace worsham.twitter.clone.Models
                     .HasConstraintName("FK_Tweets_Users");
             });
 
+            modelBuilder.Entity<Users>(entity =>
+            {
+                entity.Property(e => e.ProfilePictureUrl)
+                .HasMaxLength(300)
+                .IsUnicode(false);
+            });
+
             OnModelCreatingPartial(modelBuilder);
         }
 

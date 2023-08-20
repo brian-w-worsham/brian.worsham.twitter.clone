@@ -18,6 +18,8 @@ UsersTable
 		- varchar(12)
 	- bio
 		- varchar(160)
+	- profilePictureUrl
+		- varchar_(300)
 
 TweetsTable
 	- Id
@@ -107,9 +109,9 @@ Register
 		- Username input
 		- Email Input
 		- Password input
-		- Confirm Password input
 	- ViewModelData:
 		- Username
+			- Unique
 			- required
 			- maxLength: 20
 		- Email

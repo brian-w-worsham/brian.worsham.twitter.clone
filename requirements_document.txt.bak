@@ -18,6 +18,8 @@ UsersTable
 		- varchar(12)
 	- bio
 		- varchar(160)
+	- profilePictureUrl
+		- varchar_(300)
 
 TweetsTable
 	- Id
@@ -75,7 +77,7 @@ LikesTable
 	- ID
 		- int
 		- key
-		- auto-increment
+		- auto
 		- required
 	- LikedTweetId
 		- int
@@ -90,7 +92,7 @@ FollowsTable
 	- Id
 		- int
 		- key
-		- auto-increment
+		- auto
 		- required
 	- FollowedUserId: the user that is being followed
 		- int
@@ -107,7 +109,6 @@ Register
 		- Username input
 		- Email Input
 		- Password input
-		- Confirm Password input
 	- ViewModelData:
 		- Username
 			- required
