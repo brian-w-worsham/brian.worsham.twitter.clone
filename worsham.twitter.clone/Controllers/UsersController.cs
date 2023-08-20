@@ -76,7 +76,7 @@ namespace worsham.twitter.clone.Controllers
                     }
 
                     await _authenticationService.RegisterUser(user, user.Password);
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("DisplaySignInModal", "Home");
                 }
                 catch (DbUpdateException ex)
                 {
