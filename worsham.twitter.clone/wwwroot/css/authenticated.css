@@ -1,0 +1,27 @@
+﻿body {
+    font-family: "TwitterChirp",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+
+nav.nav {
+    line-height: 3.25rem;
+}
+
+a.nav-link {
+    color: rgb(15, 20, 25);
+}
+
+    a.nav-link.active{
+        font-weight: 700;
+    }
+
+div.container-fluid.float-start.content {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(239, 243, 244);
+    background-color: rgba(255,255,255,1.00);
+    height: 100vh;
+}
+
+main {
+    height: 100vh;
+}
