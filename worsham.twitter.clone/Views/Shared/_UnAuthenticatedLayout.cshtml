@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - brian.worsham.twitter.clone</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="YourProjectName.styles.css" />
+    <link rel="stylesheet" href="~/brian.worsham.twitter.clone.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/unauthenticated.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container-fluid">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer text-muted container-fluid mb-3">
+        <nav aria-label="Footer" role="navigation" class="nav justify-content-center d-flex">
+            <a href="https://about.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>About</span>
+            </a>
+            <a href="https://help.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Help Center</span>
+            </a>
+            <a href="https://twitter.com/tos" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Terms of Service</span>
+            </a>
+            <a href="https://twitter.com/privacy" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Privacy Policy</span>
+            </a>
+            <a href="https://support.twitter.com/articles/20170514" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Cookie Policy</span>
+            </a>
+            <a href="https://help.twitter.com/resources/accessibility" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Accessibility</span>
+            </a>
+            <a href="https://business.twitter.com/en/help/troubleshooting/how-twitter-ads-work.html?ref=web-twc-ao-gbl-adsinfo&amp;utm_source=twc&amp;utm_medium=web&amp;utm_campaign=ao&amp;utm_content=adsinfo" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Ads info</span>
+            </a>
+            <a href="https://blog.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Blog</span>
+            </a>
+            <a href="https://status.twitterstat.us" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Status</span>
+            </a>
+            <a href="https://careers.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Careers</span>
+            </a>
+            <a href="https://about.twitter.com/press/brand-assets" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Brand Resources</span>
+            </a>
+            <a href="https://ads.twitter.com/?ref=gl-tw-tw-twitter-advertise" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Advertising</span>
+            </a>
+            <a href="https://marketing.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Marketing</span>
+            </a>
+            <a href="https://business.twitter.com/?ref=web-twc-ao-gbl-twitterforbusiness&amp;utm_source=twc&amp;utm_medium=web&amp;utm_campaign=ao&amp;utm_content=twitterforbusiness" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>X for Business</span>
+            </a>
+            <a href="https://developer.twitter.com" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Developers</span>
+            </a>
+            <a href="https://twitter.com/i/directory/profiles" dir="ltr" rel="noopener noreferrer nofollow" target="_blank" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Directory</span>
+            </a>
+            <a href="/settings" dir="ltr" role="link" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>Settings</span>
+            </a>
+            <div dir="ltr" style="color: rgb(83, 100, 113);" class="nav-link">
+                <span>© 2023 X Corp.</span>
+            </div>
+        </nav>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
