@@ -15,9 +15,10 @@ namespace worsham.twitter.clone.Models
         public int LikedTweetId { get; set; }
         public int UserThatLikedTweetId { get; set; }
 
-        [ForeignKey("Id")]
+        [ForeignKey("UserThatLikedTweetId")]
         [InverseProperty("Likes")]
-        public virtual Users IdNavigation { get; set; }
+        public virtual Users UserThatLikedTweet { get; set; }
+
         [ForeignKey("LikedTweetId")]
         [InverseProperty("Likes")]
         public virtual Tweets LikedTweet { get; set; }

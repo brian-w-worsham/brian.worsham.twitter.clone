@@ -21,7 +21,7 @@ namespace worsham.twitter.clone.Controllers
         // GET: Likes
         public async Task<IActionResult> Index()
         {
-            var twitterCloneContext = _context.Likes.Include(l => l.IdNavigation).Include(l => l.LikedTweet);
+            var twitterCloneContext = _context.Likes.Include(l => l.UserThatLikedTweet).Include(l => l.LikedTweet);
             return View(await twitterCloneContext.ToListAsync());
         }
 
@@ -34,7 +34,7 @@ namespace worsham.twitter.clone.Controllers
             }
 
             var likes = await _context.Likes
-                .Include(l => l.IdNavigation)
+                .Include(l => l.UserThatLikedTweet)
                 .Include(l => l.LikedTweet)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (likes == null)
@@ -53,22 +53,35 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        // POST: Likes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,LikedTweetId,UserThatLikedTweetId")] Likes likes)
+        public async Task<IActionResult> Create(int likedTweetId) // Pass the likedTweetId from the form
         {
             if (ModelState.IsValid)
             {
+                // Get the authenticated user's ID
+                int? userThatLikedTweetId = GetCurrentUserId(); // Replace with your method to get user ID
+
+                // Create a new Likes instance with the correct user ID and liked tweet ID
+                var likes = new Likes
+                {
+                    LikedTweetId = likedTweetId,
+                    UserThatLikedTweetId = (int)userThatLikedTweetId
+                };
+
                 _context.Add(likes);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Email", likes.Id);
-            ViewData["LikedTweetId"] = new SelectList(_context.Tweets, "Id", "Content", likes.LikedTweetId);
-            return View(likes);
+
+            ViewData["Id"] = new SelectList(_context.Users, "Id", "Email");
+            ViewData["LikedTweetId"] = new SelectList(_context.Tweets, "Id", "Content");
+            return View();
+        }
+
+        private int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
         }
 
         // GET: Likes/Edit/5
@@ -135,7 +148,7 @@ namespace worsham.twitter.clone.Controllers
             }
 
             var likes = await _context.Likes
-                .Include(l => l.IdNavigation)
+                .Include(l => l.UserThatLikedTweet)
                 .Include(l => l.LikedTweet)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (likes == null)
@@ -160,14 +173,14 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.Likes.Remove(likes);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool LikesExists(int id)
         {
-          return (_context.Likes?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Likes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

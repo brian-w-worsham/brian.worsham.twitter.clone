@@ -44,7 +44,7 @@ namespace worsham.twitter.clone.Models
         public string ProfilePictureUrl { get; set; }
 
 
-        [InverseProperty("IdNavigation")]
+        [InverseProperty("UserThatLikedTweet")]
         public virtual Likes Likes { get; set; }
         [InverseProperty("Commenter")]
         public virtual ICollection<Comments> Comments { get; set; }
