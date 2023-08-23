@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
@@ -9,11 +10,18 @@ namespace worsham.twitter.clone.Controllers
     {
         private readonly TwitterCloneContext _context;
         private readonly ILogger<LikesController> _logger;
+        private int? _currentUserId;
 
         public TweetsController(TwitterCloneContext context, ILogger<LikesController> logger)
         {
             _context = context;
             _logger = logger;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            _currentUserId = HttpContext.Session.GetInt32("UserId");
+            base.OnActionExecuting(context);
         }
 
         /// <summary>
@@ -23,18 +31,14 @@ namespace worsham.twitter.clone.Controllers
         public async Task<IActionResult> Index()
         {
             try
-            {
-                // get all tweets where the tweeter is the current user and all tweets from the people they follow
-                int? currentUserId = HttpContext.Session.GetInt32("UserId");
-
+            {         
                 // Get the IDs of the people the current user follows
                 IQueryable<int>? followedUserIds = _context.Follows
-                    .Where(f => f.FollowerUserId == currentUserId)
+                    .Where(f => f.FollowerUserId == _currentUserId)
                     .Select(f => f.FollowedUserId);
 
                 // Get tweets by the current user and the users they follow
-                List<Tweets>? tweets = _context.Tweets
-                    .Where(t => t.TweeterId == currentUserId || followedUserIds.Contains(t.TweeterId)).Include(t => t.Comments).Include(t => t.Likes).Include(t => t.ReTweets).OrderBy(t => t.CreationDateTime).ToList();
+                List<Tweets>? tweets = await _context.Tweets.Where(t => t.TweeterId == _currentUserId || followedUserIds.Contains(t.TweeterId)).Include(t => t.Comments).Include(t => t.Likes).Include(t => t.ReTweets).OrderByDescending(t => t.CreationDateTime).ToListAsync();
 
                 _logger.LogInformation("Number of tweets retrieved: {TweetCount}", tweets.Count);
                 _logger.LogInformation("Number of followed users: {FollowedUserCount}", followedUserIds.Count());
@@ -47,9 +51,9 @@ namespace worsham.twitter.clone.Controllers
                     tweetModels.Add(new TweetModel()
                     {
                         Id = tweet.Id,
-                        TimeSincePosted = DateTime.Now - tweet.CreationDateTime,
+                        TimeSincePosted = DateTime.UtcNow - tweet.CreationDateTime,
                         Content = tweet.Content,
-                        TweeterUserName = _context.Users.FirstOrDefault(u => u.Id == tweet.TweeterId)?.UserName,
+                        TweeterUserName = (await _context.Users.FirstOrDefaultAsync(u => u.Id == tweet.TweeterId))?.UserName,
                         Likes = tweet.Likes.ToList(),
                         Comments = tweet.Comments.ToList(),
                         Retweets = tweet.ReTweets.ToList()
@@ -91,28 +95,53 @@ namespace worsham.twitter.clone.Controllers
             return View(tweets);
         }
 
-        // GET: Tweets/Create
-        public IActionResult Create()
-        {
-            ViewData["TweeterId"] = new SelectList(_context.Users, "Id", "Email");
-            return View();
-        }
-
-        // POST: Tweets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Handles the HTTP POST request to create a new tweet.
+        /// </summary>
+        /// <param name="postModel">The data model containing the content of the new tweet.</param>
+        /// <returns>
+        /// If the ModelState is valid, adds a new tweet to the database and redirects to the tweets feed page.
+        /// If the ModelState is invalid, logs the validation errors, and redirects to the tweets feed page.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Content,CreationDateTime,TweeterId")] Tweets tweets)
+        public async Task<IActionResult> Create([Bind("Content")] PostModel postModel)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(tweets);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    _context.Add(new Tweets()
+                    {
+                        Content = postModel.Content,
+                        CreationDateTime = DateTime.UtcNow,
+                        TweeterId = (int)_currentUserId
+                    });
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    // If ModelState is invalid, log validation errors
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
+                        }
+                    }
+                    // Redirect to the tweets feed page after logging validation errors
+                    return RedirectToAction(nameof(Index));
+                }
             }
-            ViewData["TweeterId"] = new SelectList(_context.Users, "Id", "Email", tweets.TweeterId);
-            return View(tweets);
+            catch (Exception ex)
+            {
+                // Log any unexpected exceptions that might occur during tweet creation
+                _logger.LogError(ex, "An error occurred while creating a new tweet.");
+
+                // Redirect to an error page in case of an exception
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // GET: Tweets/Edit/5
