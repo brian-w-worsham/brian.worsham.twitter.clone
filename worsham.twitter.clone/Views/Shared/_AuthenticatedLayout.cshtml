@@ -11,8 +11,17 @@
     <link rel="stylesheet" href="~/css/authenticated.css" asp-append-version="true" />
 </head>
 <body>
-    <header class="float-start mt-5" style="width: 25%;">
+    <header class="float-start mt-0 pe-5" style="width: 33.3333%;">
         <nav class="nav flex-column float-end fs-5 text-break">
+            <h1 role="heading" class="ms-2">
+                <a asp-action="Index" asp-controller="Tweets" aria-label="Twitter" role="link" class="">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="logo">
+                        <g>
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                        </g>
+                    </svg>
+                </a>
+            </h1>
             <a class="nav-link active" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
             <a class="nav-link disabled">Explore</a>
             <a class="nav-link disabled">Notifications</a>
@@ -21,19 +30,18 @@
             <a class="nav-link disabled">Bookmarks</a>
             <a class="nav-link disabled">Communities</a>
             <a class="nav-link disabled">Verified</a>
-            <a class="nav-link" asp-controller="Users" asp-action="Edit" >Profile</a>
+            <a class="nav-link" asp-controller="Users" asp-action="Edit">Profile</a>
             <a class="nav-link disabled">More</a>
         </nav>
     </header>
 
-    <div class="container-fluid float-start content" style="width: 50%;">
+    <div class="container-fluid float-start content authenticated" style="width: 33.3333%;">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <div class="container-fluid float-end" style="width: 25%;">
-
+    <div class="container-fluid float-end" style="width: 33.3333;">
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

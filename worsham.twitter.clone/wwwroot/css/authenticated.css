@@ -10,18 +10,61 @@ a.nav-link {
     color: rgb(15, 20, 25);
 }
 
-    a.nav-link.active{
+    a.nav-link.active {
         font-weight: 700;
     }
 
 div.container-fluid.float-start.content {
-    border-style: solid;
-    border-width: 1px;
-    border-color: rgb(239, 243, 244);
+    border: none;
     background-color: rgba(255,255,255,1.00);
     height: 100vh;
 }
 
 main {
     height: 100vh;
+}
+
+h1 .logo {
+    height: 2rem;
+}
+
+h2 {
+    font-size: 1.333rem;
+    font-weight: 700;
+}
+
+.content-scrollable {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 95vh;
+}
+
+    /* Hide the scrollbar */
+    .content-scrollable::-webkit-scrollbar {
+        width: 0px; /* Set the width of the scrollbar */
+        background-color: transparent; /* Make the scrollbar background transparent */
+    }
+
+    /* Customize the scrollbar thumb */
+    .content-scrollable::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2); /* Set the color of the scrollbar thumb */
+        border-radius: 4px; /* Add some border-radius for a rounded appearance */
+    }
+
+.post-text {
+    font-size: 1.333rem;
+    font-weight: 400;
+}
+
+input.post {
+    background-color: rgb(29, 155, 240);
+    color: rgb(255, 255, 255);
+    border-color: rgba(0,0,0,0);
+}
+
+.authenticated .card {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(239, 243, 244);
+    background-color: rgba(255,255,255,1.00);
 }
