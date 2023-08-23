@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
@@ -12,17 +8,68 @@ namespace worsham.twitter.clone.Controllers
     public class TweetsController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private readonly ILogger<LikesController> _logger;
 
-        public TweetsController(TwitterCloneContext context)
+        public TweetsController(TwitterCloneContext context, ILogger<LikesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        // GET: Tweets
+        /// <summary>
+        /// Displays the user's tweets and the tweets from the people they follow on the tweets feed page.
+        /// </summary>
+        /// <returns>The tweets feed view containing the tweets.</returns>
         public async Task<IActionResult> Index()
         {
-            var twitterCloneContext = _context.Tweets.Include(t => t.Tweeter);
-            return View(await twitterCloneContext.ToListAsync());
+            try
+            {
+                // get all tweets where the tweeter is the current user and all tweets from the people they follow
+                int? currentUserId = HttpContext.Session.GetInt32("UserId");
+
+                // Get the IDs of the people the current user follows
+                IQueryable<int>? followedUserIds = _context.Follows
+                    .Where(f => f.FollowerUserId == currentUserId)
+                    .Select(f => f.FollowedUserId);
+
+                // Get tweets by the current user and the users they follow
+                List<Tweets>? tweets = _context.Tweets
+                    .Where(t => t.TweeterId == currentUserId || followedUserIds.Contains(t.TweeterId)).Include(t => t.Comments).Include(t => t.Likes).Include(t => t.ReTweets).OrderBy(t => t.CreationDateTime).ToList();
+
+                _logger.LogInformation("Number of tweets retrieved: {TweetCount}", tweets.Count);
+                _logger.LogInformation("Number of followed users: {FollowedUserCount}", followedUserIds.Count());
+
+                List<TweetModel> tweetModels = new();
+
+                // Iterate through the retrieved tweets and create corresponding TweetModel objects
+                foreach (var tweet in tweets)
+                {
+                    tweetModels.Add(new TweetModel()
+                    {
+                        Id = tweet.Id,
+                        TimeSincePosted = DateTime.Now - tweet.CreationDateTime,
+                        Content = tweet.Content,
+                        TweeterUserName = _context.Users.FirstOrDefault(u => u.Id == tweet.TweeterId)?.UserName,
+                        Likes = tweet.Likes.ToList(),
+                        Comments = tweet.Comments.ToList(),
+                        Retweets = tweet.ReTweets.ToList()
+                    });
+                }
+
+                TweetsFeedViewModel tweetsFeedViewModel = new TweetsFeedViewModel(
+                    HasErrors: false,
+                    ValidationErrors: Enumerable.Empty<string>(),
+                    Tweets: tweetModels,
+                    Post: new PostModel()
+                );
+
+                return View(tweetsFeedViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting tweets in the Index method");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // GET: Tweets/Details/5
@@ -154,14 +201,14 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.Tweets.Remove(tweets);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool TweetsExists(int id)
         {
-          return (_context.Tweets?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Tweets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

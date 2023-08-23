@@ -27,9 +27,7 @@ namespace worsham.twitter.clone.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            return _context.Users != null ?
-                        View(await _context.Users.ToListAsync()) :
-                        Problem("Entity set 'TwitterCloneContext.Users'  is null.");
+            return _context.Users != null ? View(await _context.Users.ToListAsync()) : Problem("Entity set 'TwitterCloneContext.Users'  is null.");
         }
 
         // GET: Users/Details/5
@@ -40,8 +38,7 @@ namespace worsham.twitter.clone.Controllers
                 return NotFound();
             }
 
-            var users = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var users = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
             if (users == null)
             {
                 return NotFound();

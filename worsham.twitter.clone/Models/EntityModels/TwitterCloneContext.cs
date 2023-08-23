@@ -61,7 +61,7 @@ namespace worsham.twitter.clone.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
-                entity.HasOne(d => d.IdNavigation)
+                entity.HasOne(d => d.UserThatLikedTweet)
                     .WithOne(p => p.Likes)
                     .HasForeignKey<Likes>(d => d.Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
