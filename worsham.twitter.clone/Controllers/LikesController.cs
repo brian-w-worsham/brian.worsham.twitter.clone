@@ -2,20 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
     public class LikesController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly ILogger<LikesController> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LikesController(TwitterCloneContext context)
+        public LikesController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<LikesController> logger)
         {
             _context = context;
+            _authenticationService = authenticationService;
+            _logger = logger;
         }
 
         // GET: Likes
@@ -59,8 +67,11 @@ namespace worsham.twitter.clone.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Get the authenticated user's ID
-                int? userThatLikedTweetId = GetCurrentUserId(); // Replace with your method to get user ID
+                // Get the authenticated user's ID             
+                int? userThatLikedTweetId = HttpContext.Session.GetInt32("UserId");
+                
+                _logger.LogInformation("User ID retrieved from session: {UserId}", userThatLikedTweetId);
+
 
                 // Create a new Likes instance with the correct user ID and liked tweet ID
                 var likes = new Likes
@@ -71,6 +82,9 @@ namespace worsham.twitter.clone.Controllers
 
                 _context.Add(likes);
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Like created successfully for Tweet ID: {TweetId}, Liked by User ID: {UserId}", likedTweetId, userThatLikedTweetId);
+
                 return RedirectToAction(nameof(Index));
             }
 
