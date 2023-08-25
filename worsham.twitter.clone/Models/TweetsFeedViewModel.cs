@@ -7,6 +7,7 @@ namespace worsham.twitter.clone.Models
         bool HasErrors,
         IEnumerable<string> ValidationErrors,
         IEnumerable<TweetModel> Tweets,
-        PostModel Post
+        PostModel Post,
+        int? currentUserId
     );
 }

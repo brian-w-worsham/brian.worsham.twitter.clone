@@ -69,13 +69,17 @@ input.post {
     background-color: rgba(255,255,255,1.00);
 }
 
-.authenticated .card-body button.btn-link.icon-like:focus, .authenticated .card-body button.btn-link.icon-like:hover {
-    color: lightpink;
-    background-color: lightpink;
+.authenticated .card-body button.btn-link.icon:focus, .authenticated .card-body button.btn-link.icon:hover {
     opacity: 0.5;
     border-radius: 50%;
     height: 2.1rem;
     width: 2.1rem;
+}
+
+
+.authenticated .card-body button.btn-link.icon-like:focus, .authenticated .card-body button.btn-link.icon-like:hover {
+    color: lightpink;
+    background-color: lightpink;
 }
 
 .authenticated .card-body button.btn-link.icon-like path:focus, .authenticated .card-body button.btn-link.icon-like path:hover {
@@ -85,12 +89,17 @@ input.post {
 .authenticated .card-body button.btn-link.icon-retweet:focus, .authenticated .card-body button.btn-link.icon-retweet:hover {
     color: lawngreen;
     background-color: lawngreen;
-    opacity: 0.5;
-    border-radius: 50%;
-    height: 2.1rem;
-    width: 2.1rem;
 }
 
 .authenticated .card-body button.btn-link.icon-retweet path:focus, .authenticated .card-body button.btn-link.icon-retweet path:hover {
     fill: lawngreen;
+}
+
+.authenticated .card-body button.btn-link.icon-comment:focus, .authenticated .card-body button.btn-link.icon-comment:hover {
+    color: lightblue;
+    background-color: lightblue;
+}
+
+.authenticated .card-body button.btn-link.icon-comment path:focus, .authenticated .card-body button.btn-link.icon-comment path:hover {
+    fill: lightblue;
 }
