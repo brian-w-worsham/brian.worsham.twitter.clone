@@ -55,23 +55,15 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        // POST: ReTweets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Handles the creation or removal of retweets for a tweet by the authenticated user.
+        /// </summary>
+        /// <param name="tweetId">The ID of the tweet for which the retweet is being created or removed.</param>
+        /// <returns>Redirects to the Tweets Index page after the retweet operation.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(int tweetId)
         {
-            //if (ModelState.IsValid)
-            //{
-            //    _context.Add(reTweets);
-            //    await _context.SaveChangesAsync();
-            //    return RedirectToAction(nameof(Index));
-            //}
-            //ViewData["OriginalTweetId"] = new SelectList(_context.Tweets, "Id", "Content", reTweets.OriginalTweetId);
-            //ViewData["RetweeterId"] = new SelectList(_context.Users, "Id", "Email", reTweets.RetweeterId);
-            //return View(reTweets);
-
             try
             {
                 if (ModelState.IsValid)
@@ -82,6 +74,7 @@ namespace worsham.twitter.clone.Controllers
 
                     // Check if the user has already retweeted the tweet
                     bool userHasRetweetedTweet = _context.ReTweets.Any(predicate: retweet => retweet.RetweeterId == currentUserId && retweet.OriginalTweetId == tweetId);
+                    _logger.LogInformation("Retweet operation: {Operation}", userHasRetweetedTweet ? "Remove" : "Add");
 
                     if (userHasRetweetedTweet)
                     {
@@ -102,15 +95,17 @@ namespace worsham.twitter.clone.Controllers
                         // Add the new retweet to the database
                         _ = _context?.Add(entity: retweet);
                     }
-
+                    
                     // Save the changes to the database
                     await _context.SaveChangesAsync();
-                    _logger.LogInformation(message: "Retweet created successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", tweetId, currentUserId);
+                    _logger.LogInformation("Retweet {Operation} successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", userHasRetweetedTweet ? "removed" : "created", tweetId, currentUserId);
 
+                    _logger.LogInformation("Redirecting to Tweets Index page after retweet operation.");
                     return RedirectToAction(actionName: "Index", controllerName: "Tweets");
                 }
                 else
                 {
+                    _logger.LogWarning("Model state is invalid. Validation errors: {ValidationErrors}", ModelState.Values.SelectMany(v => v.Errors));
                     //Todo: render a notification to the user that the retweet failed
                     ViewData["LikeFailed"] = true;
                     return RedirectToAction(actionName: "Index", controllerName: "Tweets");
