@@ -12,10 +12,12 @@ namespace worsham.twitter.clone.Controllers
     public class ReTweetsController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private readonly ILogger<LikesController> _logger;
 
-        public ReTweetsController(TwitterCloneContext context)
+        public ReTweetsController(TwitterCloneContext context, ILogger<LikesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: ReTweets
@@ -58,17 +60,77 @@ namespace worsham.twitter.clone.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,OriginalTweetId,ReTweetCreationDateTime,RetweeterId")] ReTweets reTweets)
+        public async Task<IActionResult> Create(int tweetId)
         {
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
+            //{
+            //    _context.Add(reTweets);
+            //    await _context.SaveChangesAsync();
+            //    return RedirectToAction(nameof(Index));
+            //}
+            //ViewData["OriginalTweetId"] = new SelectList(_context.Tweets, "Id", "Content", reTweets.OriginalTweetId);
+            //ViewData["RetweeterId"] = new SelectList(_context.Users, "Id", "Email", reTweets.RetweeterId);
+            //return View(reTweets);
+
+            try
             {
-                _context.Add(reTweets);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    // Get the authenticated user's ID             
+                    int? currentUserId = HttpContext.Session.GetInt32("UserId");
+                    _logger.LogInformation(message: "User ID retrieved from session: {UserId}", currentUserId);
+
+                    // Check if the user has already retweeted the tweet
+                    bool userHasRetweetedTweet = _context.ReTweets.Any(predicate: retweet => retweet.RetweeterId == currentUserId && retweet.OriginalTweetId == tweetId);
+
+                    if (userHasRetweetedTweet)
+                    {
+                        // remove the retweet from the database
+                        var retweetToRemove = _context.ReTweets.FirstOrDefault(predicate: retweet => retweet.RetweeterId == currentUserId && retweet.OriginalTweetId == tweetId);
+                        _ = _context?.Remove(entity: retweetToRemove);
+                    }
+                    else
+                    {
+                        //Create a new ReTweets instance with the correct user ID and retweeted tweet ID
+                        ReTweets? retweet = new ReTweets
+                        {
+                            OriginalTweetId = tweetId,
+                            RetweeterId = (int)currentUserId,
+                            ReTweetCreationDateTime = DateTime.UtcNow
+                        };
+
+                        // Add the new retweet to the database
+                        _ = _context?.Add(entity: retweet);
+                    }
+
+                    // Save the changes to the database
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation(message: "Retweet created successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", tweetId, currentUserId);
+
+                    return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+                }
+                else
+                {
+                    //Todo: render a notification to the user that the retweet failed
+                    ViewData["LikeFailed"] = true;
+                    return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+                }
             }
-            ViewData["OriginalTweetId"] = new SelectList(_context.Tweets, "Id", "Content", reTweets.OriginalTweetId);
-            ViewData["RetweeterId"] = new SelectList(_context.Users, "Id", "Email", reTweets.RetweeterId);
-            return View(reTweets);
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Error updating the database while creating a ReTweet in the Create method");
+                // Handle database-related error gracefully
+                //Todo: render a notification to the user that the retweet failed
+                ViewData["LikeFailed"] = true;
+                return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting creating a ReTweet in the Create method");
+                //Todo: render a notification to the user that the retweet failed
+                ViewData["ReTweetFailed"] = true;
+                return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+            }
         }
 
         // GET: ReTweets/Edit/5
@@ -160,14 +222,14 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.ReTweets.Remove(reTweets);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ReTweetsExists(int id)
         {
-          return (_context.ReTweets?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.ReTweets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

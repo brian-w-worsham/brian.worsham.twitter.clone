@@ -111,7 +111,7 @@ namespace worsham.twitter.clone.Controllers
                 }
                 else
                 {
-                    // Todo: render a notification to the user that the like failed in the view 
+                    // Todo: render a notification to the user that the like failed
                     ViewData["LikeFailed"] = true;
                     return RedirectToAction(actionName: "Index", controllerName: "Tweets");
                 }
@@ -119,15 +119,16 @@ namespace worsham.twitter.clone.Controllers
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a Like in the Create method");
-                // Handle database-related error gracefully
-                // For example, render a notification to the user that the like failed
+                // Todo: render a notification to the user that the like failed
                 ViewData["LikeFailed"] = true;
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting creating a Like in the Create method");
-                return RedirectToAction("Error", "Home");
+                // Todo: render a notification to the user that the like failed
+                ViewData["LikeFailed"] = true;
+                return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
         }
 

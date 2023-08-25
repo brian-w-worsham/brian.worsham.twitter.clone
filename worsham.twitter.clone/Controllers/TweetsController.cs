@@ -31,7 +31,7 @@ namespace worsham.twitter.clone.Controllers
         public async Task<IActionResult> Index()
         {
             try
-            {         
+            {
                 // Get the IDs of the people the current user follows
                 IQueryable<int>? followedUserIds = _context.Follows
                     .Where(f => f.FollowerUserId == _currentUserId)
@@ -40,14 +40,44 @@ namespace worsham.twitter.clone.Controllers
                 // Get tweets by the current user and the users they follow
                 List<Tweets>? tweets = await _context.Tweets.Where(t => t.TweeterId == _currentUserId || followedUserIds.Contains(t.TweeterId)).Include(t => t.Comments).Include(t => t.Likes).Include(t => t.ReTweets).OrderByDescending(t => t.CreationDateTime).ToListAsync();
 
-                _logger.LogInformation("Number of tweets retrieved: {TweetCount}", tweets.Count);
+                // Create a List of ReTweets from users the current user follows
+                List<ReTweets>? reTweets = await _context.ReTweets.Where(rt => followedUserIds.Contains(rt.RetweeterId)).Include(rt => rt.OriginalTweet).Include(rt => rt.Retweeter).OrderByDescending(rt => rt.ReTweetCreationDateTime).ToListAsync();
+
+                // Extract OriginalTweets from reTweets
+                List<Tweets> reTweetedTweets = reTweets.Select(rt => rt.OriginalTweet).ToList();
+
+                // Merge the sorted lists
+                List<Tweets> combinedAndSortedTweets = new List<Tweets>();
+                combinedAndSortedTweets.AddRange(reTweetedTweets);
+                combinedAndSortedTweets.AddRange(tweets);
+
+                // Sort the combined list by maximum of ReTweetCreationDateTime in descending order
+                combinedAndSortedTweets.Sort((item1, item2) =>
+                {
+                    DateTime minCreationTime1 = item1.CreationDateTime;
+                    if (item1.ReTweets.Any())
+                    {
+                        minCreationTime1 = item1.ReTweets.Min(rt => rt.ReTweetCreationDateTime);
+                    }
+
+                    DateTime minCreationTime2 = item2.CreationDateTime;
+                    if (item2.ReTweets.Any())
+                    {
+                        minCreationTime2 = item2.ReTweets.Min(rt => rt.ReTweetCreationDateTime);
+                    }
+
+                    return minCreationTime2.CompareTo(minCreationTime1);
+                });
+
+                _logger.LogInformation("Combined and sorted {Count} tweets and retweets.", combinedAndSortedTweets.Count);
                 _logger.LogInformation("Number of followed users: {FollowedUserCount}", followedUserIds.Count());
 
                 List<TweetModel> tweetModels = new();
 
                 // Iterate through the retrieved tweets and create corresponding TweetModel objects
-                foreach (var tweet in tweets)
+                foreach (var tweet in combinedAndSortedTweets)
                 {
+                    _logger.LogInformation("Processing tweet with ID {TweetId}.", tweet.Id);
                     tweetModels.Add(new TweetModel()
                     {
                         Id = tweet.Id,
@@ -72,7 +102,7 @@ namespace worsham.twitter.clone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting tweets in the Index method");
-                return RedirectToAction("Error", "Home");
+                return RedirectToAction("Error", "Home"); // todo: create custom error page to redirect to
             }
         }
 
@@ -139,8 +169,9 @@ namespace worsham.twitter.clone.Controllers
                 // Log any unexpected exceptions that might occur during tweet creation
                 _logger.LogError(ex, "An error occurred while creating a new tweet.");
 
-                // Redirect to an error page in case of an exception
-                return RedirectToAction("Error", "Home");
+                //Todo: render a notification to the user that the tweet creation failed
+                ViewData["TweetFailed"] = true;
+                return RedirectToAction("Index", "Tweets");
             }
         }
 

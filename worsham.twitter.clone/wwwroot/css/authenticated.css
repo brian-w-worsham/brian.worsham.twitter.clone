@@ -69,7 +69,7 @@ input.post {
     background-color: rgba(255,255,255,1.00);
 }
 
-.authenticated .card-body button.btn-link.icon:focus, .authenticated .card-body button.btn-link.icon:hover {
+.authenticated .card-body button.btn-link.icon-like:focus, .authenticated .card-body button.btn-link.icon-like:hover {
     color: lightpink;
     background-color: lightpink;
     opacity: 0.5;
@@ -78,6 +78,19 @@ input.post {
     width: 2.1rem;
 }
 
-.authenticated .card-body button.btn-link.icon path:focus, .authenticated .card-body button.btn-link.icon path:hover {
+.authenticated .card-body button.btn-link.icon-like path:focus, .authenticated .card-body button.btn-link.icon-like path:hover {
     fill: pink;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet:focus, .authenticated .card-body button.btn-link.icon-retweet:hover {
+    color: lawngreen;
+    background-color: lawngreen;
+    opacity: 0.5;
+    border-radius: 50%;
+    height: 2.1rem;
+    width: 2.1rem;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet path:focus, .authenticated .card-body button.btn-link.icon-retweet path:hover {
+    fill: lawngreen;
 }
