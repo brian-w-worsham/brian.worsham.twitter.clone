@@ -114,7 +114,6 @@ namespace worsham.twitter.clone.Controllers
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a ReTweet in the Create method");
-                // Handle database-related error gracefully
                 //Todo: render a notification to the user that the retweet failed
                 ViewData["LikeFailed"] = true;
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
