@@ -68,3 +68,16 @@ input.post {
     border-color: rgb(239, 243, 244);
     background-color: rgba(255,255,255,1.00);
 }
+
+.authenticated .card-body button.btn-link.icon:focus, .authenticated .card-body button.btn-link.icon:hover {
+    color: lightpink;
+    background-color: lightpink;
+    opacity: 0.5;
+    border-radius: 50%;
+    height: 2.1rem;
+    width: 2.1rem;
+}
+
+.authenticated .card-body button.btn-link.icon path:focus, .authenticated .card-body button.btn-link.icon path:hover {
+    fill: pink;
+}

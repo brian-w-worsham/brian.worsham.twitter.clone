@@ -61,36 +61,74 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Handles the HTTP POST request to like or unlike a tweet.
+        /// </summary>
+        /// <param name="tweetId">The ID of the tweet being liked or unliked.</param>
+        /// <returns>
+        /// If the ModelState is valid and the like operation succeeds, redirects to the tweets feed page.
+        /// If the ModelState is invalid, renders a notification to the user in the view and redirects to the tweets feed page.
+        /// If a database update exception occurs during the like operation, logs the error, renders a notification to the user, and redirects to the tweets feed page.
+        /// If any other exception occurs during the like operation, logs the error and redirects to the error page.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int likedTweetId) // Pass the likedTweetId from the form
+        public async Task<IActionResult> Create(int tweetId) // Pass the likedTweetId from the form
         {
-            if (ModelState.IsValid)
+            try
             {
-                // Get the authenticated user's ID             
-                int? userThatLikedTweetId = HttpContext.Session.GetInt32("UserId");
-                
-                _logger.LogInformation("User ID retrieved from session: {UserId}", userThatLikedTweetId);
-
-
-                // Create a new Likes instance with the correct user ID and liked tweet ID
-                var likes = new Likes
+                if (ModelState.IsValid)
                 {
-                    LikedTweetId = likedTweetId,
-                    UserThatLikedTweetId = (int)userThatLikedTweetId
-                };
+                    // Get the authenticated user's ID             
+                    int? userThatLikedTweetId = HttpContext.Session.GetInt32("UserId");
+                    _logger.LogInformation(message: "User ID retrieved from session: {UserId}", userThatLikedTweetId);
 
-                _context.Add(likes);
-                await _context.SaveChangesAsync();
+                    // Check if the user has already liked the tweet
+                    var userHasLikedTweet = _context.Likes.Any(l => l.UserThatLikedTweetId == userThatLikedTweetId && l.LikedTweetId == tweetId);
 
-                _logger.LogInformation("Like created successfully for Tweet ID: {TweetId}, Liked by User ID: {UserId}", likedTweetId, userThatLikedTweetId);
+                    if (userHasLikedTweet)
+                    {
+                        // remove the like from the database
+                        var likeToRemove = _context.Likes.FirstOrDefault(l => l.UserThatLikedTweetId == userThatLikedTweetId && l.LikedTweetId == tweetId);
+                        _ = _context?.Remove(entity: likeToRemove);
+                    }
+                    else
+                    {
+                        //Create a new Likes instance with the correct user ID and liked tweet ID
+                        var like = new Likes
+                        {
+                            LikedTweetId = tweetId, 
+                            UserThatLikedTweetId = (int)userThatLikedTweetId
+                        };
 
-                return RedirectToAction(nameof(Index));
+                        _context?.Add(entity: like);
+                    }
+                    _ = await _context?.SaveChangesAsync();
+
+                    _logger.LogInformation(message: "Like created successfully for Tweet ID: {TweetId}, Liked by User ID: {UserId}", tweetId, userThatLikedTweetId);
+
+                    return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+                }
+                else
+                {
+                    // Todo: render a notification to the user that the like failed in the view 
+                    ViewData["LikeFailed"] = true;
+                    return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+                }
             }
-
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Email");
-            ViewData["LikedTweetId"] = new SelectList(_context.Tweets, "Id", "Content");
-            return View();
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Error updating the database while creating a Like in the Create method");
+                // Handle database-related error gracefully
+                // For example, render a notification to the user that the like failed
+                ViewData["LikeFailed"] = true;
+                return RedirectToAction(actionName: "Index", controllerName: "Tweets");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting creating a Like in the Create method");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         private int? GetCurrentUserId()
