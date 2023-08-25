@@ -1,23 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using worsham.twitter.clone.Utils;
+using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Models
 {
     public class ProfileModel
     {
-        [Required]
-        [StringLength(20)]
-        [Unicode(false)]
-        public string UserName { get; set; }
-        [StringLength(160)]
-        [Unicode(false)] 
-        public string Bio { get; set; }
-        [StringLength(300)]
-        [Unicode(false)]
-        public string ProfilePictureUrl { get; set; }
-        public int FollowingCount { get; set; }
-        public int FollowersCount { get; set; }
+        public Users User { get; set; }
         public int TweetsCount { get; set; }
         public bool IsFollowing { get; set; }
         public bool IsCurrentUser { get; set; }

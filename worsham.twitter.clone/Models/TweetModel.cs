@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Models
 {

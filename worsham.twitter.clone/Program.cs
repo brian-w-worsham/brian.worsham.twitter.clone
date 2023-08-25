@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone

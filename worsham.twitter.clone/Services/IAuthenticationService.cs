@@ -1,4 +1,5 @@
 ﻿using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Services
 {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace worsham.twitter.clone.Models
+namespace worsham.twitter.clone.Models.EntityModels
 {
     public partial class TwitterCloneContext : DbContext
     {

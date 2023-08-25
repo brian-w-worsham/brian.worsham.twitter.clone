@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
@@ -16,12 +18,19 @@ namespace worsham.twitter.clone.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<UsersController> _logger;
+        private int? _currentUserId;
 
         public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger)
         {
             _context = context;
             _authenticationService = authenticationService;
             _logger = logger;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            _currentUserId = HttpContext.Session.GetInt32("UserId");
+            base.OnActionExecuting(context);
         }
 
         // GET: Users
@@ -155,6 +164,33 @@ namespace worsham.twitter.clone.Controllers
             }
             return View(users);
         }
+
+        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        {
+            // Get the authenticated user's ID
+            int? userId = _currentUserId;
+
+            // Create a directory for the user's profile pictures
+            string profilePicturesPath = Path.Combine("wwwroot", "uploads", "profile_pictures", userId?.ToString());
+            Directory.CreateDirectory(profilePicturesPath);
+
+            // Generate a unique filename for the uploaded file
+            string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            string filePath = Path.Combine(profilePicturesPath, uniqueFileName);
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Save the file path (relative to wwwroot) to the user's profilePictureUrl property in the database
+            // UpdateUserProfilePictureUrl(userId, $"/uploads/profile_pictures/{userId}/{uniqueFileName}");
+
+            // Redirect or return a response indicating success
+            return RedirectToAction("Profile", "User", new { id = userId });
+        }
+
 
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
