@@ -94,7 +94,8 @@ namespace worsham.twitter.clone.Controllers
                     HasErrors: false,
                     ValidationErrors: Enumerable.Empty<string>(),
                     Tweets: tweetModels,
-                    Post: new PostModel()
+                    Post: new PostModel(),
+                    currentUserId: _currentUserId
                 );
 
                 return View(tweetsFeedViewModel);
@@ -160,7 +161,7 @@ namespace worsham.twitter.clone.Controllers
                             _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
                         }
                     }
-                    // Redirect to the tweets feed page after logging validation errors
+                    // Todo: render a notification to the user that the tweet creation failed
                     return RedirectToAction(nameof(Index));
                 }
             }

@@ -23,7 +23,14 @@ head {
     display: none;
 }
 
-.btn-primary {
+.btn-primary--dark {
     background-color: black;
     border-color: black;
+    color: white;
+    font-weight: 700;
+}
+
+.btn-primary--dark:hover {
+    opacity: 0.9;
+    color: white;
 }

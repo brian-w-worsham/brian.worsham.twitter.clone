@@ -12,10 +12,12 @@ namespace worsham.twitter.clone.Controllers
     public class CommentsController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private readonly ILogger<LikesController> _logger;
 
-        public CommentsController(TwitterCloneContext context)
+        public CommentsController(TwitterCloneContext context, ILogger<LikesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Comments
@@ -53,9 +55,18 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        // POST: Comments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates a new comment and adds it to the database.
+        /// </summary>
+        /// <param name="comments">The comment to be created.</param>
+        /// <returns>
+        /// If the ModelState is valid, redirects to the "Index" action of the "Tweets" controller.
+        /// If the ModelState is invalid, logs validation errors, and redirects to the "Index" action of the "Tweets" controller.
+        /// </returns>
+        /// <remarks>
+        /// If the ModelState is invalid, this method logs validation errors using the provided logger.
+        /// It also contains a "Todo" comment indicating the intention to render a notification to the user in case of failure.
+        /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Content,OriginalTweetId,CommenterId")] Comments comments)
@@ -64,11 +75,21 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.Add(comments);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Tweets");
             }
-            ViewData["CommenterId"] = new SelectList(_context.Users, "Id", "Email", comments.CommenterId);
-            ViewData["OriginalTweetId"] = new SelectList(_context.Tweets, "Id", "Content", comments.OriginalTweetId);
-            return View(comments);
+            else
+            {
+                // If ModelState is invalid, log validation errors
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
+                    }
+                }
+                // Todo: render a notification to the user that the comment creation failed
+                return RedirectToAction("Index", "Tweets");
+            }            
         }
 
         // GET: Comments/Edit/5
