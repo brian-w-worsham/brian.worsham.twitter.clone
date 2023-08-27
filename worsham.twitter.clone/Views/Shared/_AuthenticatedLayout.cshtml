@@ -41,12 +41,16 @@
         </main>
     </div>
 
-    <div class="container-fluid float-end" style="width: 33.3333;">
+    <div class="container-fluid float-end" style="width: 33.3333%;">
+        <div id="suggestedUsersCard" class="card text-dark bg-light mb-3 mt-5 d-none" style="max-width: 22rem;">
+            <h2 class="card-header fw-bold">You might like</h2>
+        </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/notFollowed.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

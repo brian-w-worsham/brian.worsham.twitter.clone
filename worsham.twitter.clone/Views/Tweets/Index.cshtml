@@ -53,7 +53,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="card-title">
-                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@tweet.TweeterUserId">
+                            <a asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
                                 <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
                             </a>
                         </div>

@@ -4,6 +4,7 @@ namespace worsham.twitter.clone.Models
 {
     public class UserProfileModel
     {
+        public int UserId { get; set; }
         public string UserName { get; set; }
         public string Bio { get; set; }
         public string ProfilePictureUrl { get; set; }

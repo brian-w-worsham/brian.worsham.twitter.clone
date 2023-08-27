@@ -10,13 +10,16 @@
 
     bool currentUserIsFollowing;
     bool isValidBoolFollowing = Boolean.TryParse(ViewData["CurrentUserIsFollowing"]?.ToString(), out currentUserIsFollowing);
+
+    int followId;
+    bool isValidBoolFollowId = Int32.TryParse(ViewData["FollowId"]?.ToString(), out followId);
 }
 <div id="profile">
     <h2 class="mt-3 mb-0">@Model.UserName</h2>
     <div class="text-secondary small">@Model.Tweets.Count posts</div>
     <div class="card">
         <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop">
-        <img id="profilePicture" class="profile-picture rounded-circle" src="@profilePictureSrc" />
+        <img id="profilePicture" class="profile-picture rounded-circle" src="@profilePictureSrc" title="profile picture" />
         @if (isValidBoolViewing && userIsViewingOwnProfile)
         {
             <button id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Edit profile</button>
@@ -25,12 +28,18 @@
         {
             if (isValidBoolFollowing && currentUserIsFollowing)
             {
-                <button id="btnUnFollow" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Following</button>
+                <form asp-controller="Follows" asp-action="Delete" method="post">
+                    <input type="hidden" id="followId" name="id" value="@followId" />
+                    <button id="btnUnFollow" type="submit" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Following</button>
+                </form>
             }
             else
             {
-                <button id="btnFollow" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Follow</button>
-            }            
+                <form asp-controller="Follows" asp-action="Create" method="post">
+                    <input type="hidden" name="userId" value="@Model.UserId" />
+                    <button id="btnFollow" type="submit" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Follow</button>
+                </form>
+            }
         }
         <div class="card-body mt-5">
             <h5 class="card-title fw-bold">@Model.UserName</h5>

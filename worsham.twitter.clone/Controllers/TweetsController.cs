@@ -92,6 +92,8 @@ namespace worsham.twitter.clone.Controllers
                     });
                 }
 
+                tweetModels.Sort((item1, item2) => item1.TimeSincePosted.CompareTo(item2.TimeSincePosted));
+
                 TweetsFeedViewModel tweetsFeedViewModel = new TweetsFeedViewModel(
                     HasErrors: false,
                     ValidationErrors: Enumerable.Empty<string>(),

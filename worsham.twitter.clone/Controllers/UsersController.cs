@@ -56,26 +56,42 @@ namespace worsham.twitter.clone.Controllers
             return View(users);
         }
 
+        /// <summary>
+        /// Retrieves and displays a user's profile data.
+        /// </summary>
+        /// <param name="followedUserId">The optional ID of the user whose profile is being viewed.</param>
+        /// <returns>
+        /// Returns an <see cref="IActionResult"/> representing the action result.
+        /// If successful, displays the user's profile using the "UserProfile" view.
+        /// If the user does not exist, returns a "NotFound" response.
+        /// If an error occurs during the operation, redirects to the "Error" action of the "Home" controller.
+        /// </returns>
+        /// <remarks>
+        /// This action retrieves the profile data of a user. If a specific <paramref name="followedUserId"/> is provided,
+        /// the profile of that user is displayed. If no <paramref name="followedUserId"/> is provided or if the provided
+        /// ID matches the current user's ID, the profile of the current user is displayed. The method retrieves user data
+        /// including tweets, likes, retweets, followers count, and following count. If the user does not exist, a "NotFound"
+        /// response is returned. If an exception occurs during the retrieval or display of data, an error log is generated,
+        /// and the user is redirected to the "Error" action of the "Home" controller.
+        /// </remarks>
         [HttpGet]
-        public async Task<IActionResult> Profile(int? id)
+        public IActionResult Profile(int? followedUserId)
         {
-            /* 
-             * Create and return a Profile View along with the data needed to build out the Profile page for the current user.
-             * The current user's id is stored in the _currentUserId field.
-             * We can use _currentUserId to get the current user's data from the _context.Users entity model
-             * The requirements for the profile page are for it to display the user's name, bio, profile picture, number of followers, list of tweets, list of liked tweets, and a list of ReTweets.
-             * Most of the required data will be available from the _context.Users object, but we may have to retrieve some data from other tables and return it to the View as ViewData or as a custom model.
-             */
             try
             {
                 int? userId;
 
-                if (id.HasValue && id.Value != _currentUserId)
+                if (followedUserId.HasValue && followedUserId.Value != _currentUserId)
                 {
-                    userId = id.Value; // Use the provided userId if available
+                    userId = followedUserId.Value; // Use the provided userId if available
                     ViewData["UserIsViewingOwnProfile"] = false;
                     // Check if the current user is following the user whose profile is being viewed
-                    ViewData["CurrentUserIsFollowing"] = _context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId);
+                    bool currentUserIsFollowing = _context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId);
+                    ViewData["CurrentUserIsFollowing"] = currentUserIsFollowing;
+                    if (currentUserIsFollowing)
+                    {
+                        ViewData["FollowId"] = _context.Follows?.FirstOrDefault(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId)?.Id;
+                    }
                 }
                 else
                 {
@@ -88,7 +104,6 @@ namespace worsham.twitter.clone.Controllers
 
                 if (currentUser == null)
                 {
-                    // Handle the case where the current user is not found
                     // Todo: display a notification to the user that the requested user was not found
                     return NotFound();
                 }
@@ -96,6 +111,7 @@ namespace worsham.twitter.clone.Controllers
                 // Create a custom profile model to hold the necessary data
                 UserProfileModel userProfile = new UserProfileModel
                 {
+                    UserId = currentUser.Id,
                     UserName = currentUser.UserName,
                     Bio = currentUser.Bio,
                     ProfilePictureUrl = currentUser.ProfilePictureUrl,
@@ -109,9 +125,6 @@ namespace worsham.twitter.clone.Controllers
                         OriginalTweetCreationDateTime = r.OriginalTweet.CreationDateTime,
                         OriginalTweetContent = r.OriginalTweet.Content
                     }).ToList(),
-                    /* The LikedTweets property should be a list of the tweets that the current user has liked and it should include the UserName of the user that originally tweeted the liked tweet.
-                     It should also include the CreationDateTime and Content of the liked tweet.
-                     */
                     LikedTweetInfos = _context.Likes.Where(l => l.UserThatLikedTweetId == _currentUserId).OrderByDescending(l => l.LikedTweet.CreationDateTime).Select(l => new LikedTweetInfo
                     {
                         LikedTweet = l.LikedTweet,
@@ -120,7 +133,6 @@ namespace worsham.twitter.clone.Controllers
                         OriginalTweetContent = l.LikedTweet.Content
                     }).ToList()
                 };
-                // from userProfile.Retweets retrieve the first tweet that the current user has ReTweeted and then log the UserName of the user that originally tweeted the tweet
 
                 return View(userProfile);
             }
