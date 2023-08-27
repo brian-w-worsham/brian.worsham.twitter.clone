@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Controllers
 {
@@ -83,6 +84,7 @@ namespace worsham.twitter.clone.Controllers
                         Id = tweet.Id,
                         TimeSincePosted = DateTime.UtcNow - tweet.CreationDateTime,
                         Content = tweet.Content,
+                        TweeterUserId = tweet.ReTweets.Any() ? tweet.ReTweets.First().OriginalTweet.TweeterId : tweet.TweeterId,
                         TweeterUserName = (await _context.Users.FirstOrDefaultAsync(u => u.Id == tweet.TweeterId))?.UserName,
                         Likes = tweet.Likes.ToList(),
                         Comments = tweet.Comments.ToList(),

@@ -35,4 +35,8 @@
 	  </Content>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\uploads\profile_pictures\" />
+	</ItemGroup>
+
 </Project>

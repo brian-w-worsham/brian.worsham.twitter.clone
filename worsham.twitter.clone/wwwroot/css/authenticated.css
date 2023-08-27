@@ -103,3 +103,35 @@ input.post {
 .authenticated .card-body button.btn-link.icon-comment path:focus, .authenticated .card-body button.btn-link.icon-comment path:hover {
     fill: lightblue;
 }
+
+#profile img.profile-backdrop {
+    height: 12rem;
+    background-color: #d0d9de;
+}
+
+#profile img.profile-picture {
+    height: 6rem;
+    width: 6rem;
+    /*background-color: tan;*/
+    border-color: rgba(255,255,255,1.00);
+    border-style: solid;
+    border-width: .2rem;
+    /*padding: .5rem;*/
+    position: absolute;
+    top: 9rem;
+    left: 1rem;
+}
+
+#profile .profile-btn {
+    width: -moz-fit-content;
+    width: fit-content;
+    position: absolute;
+    right: 1rem;
+    top: 13rem;
+    border-color: #d0d9de;
+    background-color: rgba(255,255,255,1.00);
+}
+
+#profile .profile-btn:hover {
+    background-color: rgba(29, 155, 240, 0.1);
+}

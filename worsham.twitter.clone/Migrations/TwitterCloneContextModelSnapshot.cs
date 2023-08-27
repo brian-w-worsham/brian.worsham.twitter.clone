@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using worsham.twitter.clone.Models;
+using worsham.twitter.clone.Models.EntityModels;
 
 #nullable disable
 

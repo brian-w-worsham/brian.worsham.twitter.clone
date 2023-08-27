@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Utils;
 
-namespace worsham.twitter.clone.Models
+namespace worsham.twitter.clone.Models.EntityModels
 {
     public partial class Users
     {

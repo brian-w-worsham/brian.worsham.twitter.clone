@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace worsham.twitter.clone.Models
+namespace worsham.twitter.clone.Models.EntityModels
 {
     public partial class Follows
     {
