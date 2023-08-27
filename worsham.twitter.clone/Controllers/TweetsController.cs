@@ -84,6 +84,7 @@ namespace worsham.twitter.clone.Controllers
                         Id = tweet.Id,
                         TimeSincePosted = DateTime.UtcNow - tweet.CreationDateTime,
                         Content = tweet.Content,
+                        TweeterUserId = tweet.ReTweets.Any() ? tweet.ReTweets.First().OriginalTweet.TweeterId : tweet.TweeterId,
                         TweeterUserName = (await _context.Users.FirstOrDefaultAsync(u => u.Id == tweet.TweeterId))?.UserName,
                         Likes = tweet.Likes.ToList(),
                         Comments = tweet.Comments.ToList(),

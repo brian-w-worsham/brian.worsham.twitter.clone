@@ -1,7 +1,7 @@
 ﻿@model TweetsFeedViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Home / X";
     Layout = "~/Views/Shared/_AuthenticatedLayout.cshtml";
     PostModel postModel = Model.Post;
 }
@@ -44,7 +44,7 @@
         </div>
     </form>
     @{
-        int index = 0;        
+        int index = 0;
     }
     @foreach (var tweet in Model.Tweets)
     {
@@ -53,7 +53,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="card-title">
-                            <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
+                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@tweet.TweeterUserId">
+                                <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
+                            </a>
                         </div>
                         <p class="card-text">@tweet.Content</p>
                         @{
@@ -63,7 +65,6 @@
                         }
                         <partial name="_CreateCommentModal" model="@createCommentModalModel" />
                         <partial name="_tweetActionsRow" model="@tweetActionsRowModel" />
-                        
                     </div>
                 </div>
             </div>

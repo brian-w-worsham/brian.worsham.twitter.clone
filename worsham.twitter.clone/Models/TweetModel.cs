@@ -20,7 +20,9 @@ namespace worsham.twitter.clone.Models
         [StringLength(280, MinimumLength = 1, ErrorMessage = "Tweet must be between 1 and 280 characters.")]
         [Unicode(false)]
         public string? Content { get; set; }
-        
+
+        public int TweeterUserId { get; set; }
+
         [Required]
         [StringLength(20)]
         [Unicode(false)]

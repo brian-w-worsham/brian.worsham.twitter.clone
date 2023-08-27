@@ -56,6 +56,81 @@ namespace worsham.twitter.clone.Controllers
             return View(users);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Profile(int? id)
+        {
+            /* 
+             * Create and return a Profile View along with the data needed to build out the Profile page for the current user.
+             * The current user's id is stored in the _currentUserId field.
+             * We can use _currentUserId to get the current user's data from the _context.Users entity model
+             * The requirements for the profile page are for it to display the user's name, bio, profile picture, number of followers, list of tweets, list of liked tweets, and a list of ReTweets.
+             * Most of the required data will be available from the _context.Users object, but we may have to retrieve some data from other tables and return it to the View as ViewData or as a custom model.
+             */
+            try
+            {
+                int? userId;
+
+                if (id.HasValue && id.Value != _currentUserId)
+                {
+                    userId = id.Value; // Use the provided userId if available
+                    ViewData["UserIsViewingOwnProfile"] = false;
+                    // Check if the current user is following the user whose profile is being viewed
+                    ViewData["CurrentUserIsFollowing"] = _context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId);
+                }
+                else
+                {
+                    userId = _currentUserId; // Use the default _currentUserId if no userId is provided
+                    ViewData["UserIsViewingOwnProfile"] = true;
+                }
+
+                // Get the current user's data
+                Users? currentUser = _context?.Users?.Include(u => u.Tweets).Include(u => u.Likes).Include(u => u.ReTweets).FirstOrDefault(u => u.Id == userId);
+
+                if (currentUser == null)
+                {
+                    // Handle the case where the current user is not found
+                    // Todo: display a notification to the user that the requested user was not found
+                    return NotFound();
+                }
+
+                // Create a custom profile model to hold the necessary data
+                UserProfileModel userProfile = new UserProfileModel
+                {
+                    UserName = currentUser.UserName,
+                    Bio = currentUser.Bio,
+                    ProfilePictureUrl = currentUser.ProfilePictureUrl,
+                    FollowersCount = _context.Follows.Count(f => f.FollowedUserId == currentUser.Id),
+                    FollowingCount = _context.Follows.Count(f => f.FollowerUserId == currentUser.Id),
+                    Tweets = currentUser.Tweets.OrderByDescending(t => t.CreationDateTime).ToList(),
+                    RetweetedTweets = _context.ReTweets.Where(r => r.RetweeterId == _currentUserId).OrderByDescending(r => r.OriginalTweet.CreationDateTime).Select(r => new RetweetedTweetInfo
+                    {
+                        OriginalTweet = r.OriginalTweet,
+                        OriginalUserName = r.OriginalTweet.Tweeter.UserName,
+                        OriginalTweetCreationDateTime = r.OriginalTweet.CreationDateTime,
+                        OriginalTweetContent = r.OriginalTweet.Content
+                    }).ToList(),
+                    /* The LikedTweets property should be a list of the tweets that the current user has liked and it should include the UserName of the user that originally tweeted the liked tweet.
+                     It should also include the CreationDateTime and Content of the liked tweet.
+                     */
+                    LikedTweetInfos = _context.Likes.Where(l => l.UserThatLikedTweetId == _currentUserId).OrderByDescending(l => l.LikedTweet.CreationDateTime).Select(l => new LikedTweetInfo
+                    {
+                        LikedTweet = l.LikedTweet,
+                        OriginalUserName = l.LikedTweet.Tweeter.UserName,
+                        OriginalTweetCreationDateTime = l.LikedTweet.CreationDateTime,
+                        OriginalTweetContent = l.LikedTweet.Content
+                    }).ToList()
+                };
+                // from userProfile.Retweets retrieve the first tweet that the current user has ReTweeted and then log the UserName of the user that originally tweeted the tweet
+
+                return View(userProfile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user profile data");
+                return RedirectToAction("Error", "Home");
+            }
+        }
+
         // GET: Users/Create
         public IActionResult Create()
         {

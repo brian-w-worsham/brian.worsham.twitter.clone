@@ -1,0 +1,98 @@
+﻿@model UserProfileModel
+
+@{
+    ViewData["Title"] = $"{Model.UserName} / X";
+    Layout = "~/Views/Shared/_AuthenticatedLayout.cshtml";
+
+    string profilePictureSrc = @Model.ProfilePictureUrl ?? "/uploads/profile_pictures/default/1.jpg";
+    bool userIsViewingOwnProfile;
+    bool isValidBoolViewing = Boolean.TryParse(ViewData["UserIsViewingOwnProfile"]?.ToString(), out userIsViewingOwnProfile);
+
+    bool currentUserIsFollowing;
+    bool isValidBoolFollowing = Boolean.TryParse(ViewData["CurrentUserIsFollowing"]?.ToString(), out currentUserIsFollowing);
+}
+<div id="profile">
+    <h2 class="mt-3 mb-0">@Model.UserName</h2>
+    <div class="text-secondary small">@Model.Tweets.Count posts</div>
+    <div class="card">
+        <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop">
+        <img id="profilePicture" class="profile-picture rounded-circle" src="@profilePictureSrc" />
+        @if (isValidBoolViewing && userIsViewingOwnProfile)
+        {
+            <button id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Edit profile</button>
+        }
+        else
+        {
+            if (isValidBoolFollowing && currentUserIsFollowing)
+            {
+                <button id="btnUnFollow" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Following</button>
+            }
+            else
+            {
+                <button id="btnFollow" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Follow</button>
+            }            
+        }
+        <div class="card-body mt-5">
+            <h5 class="card-title fw-bold">@Model.UserName</h5>
+            <p class="card-text">@Model.Bio</p>
+        </div>
+        <ul class="list-group list-group-flush list-group-horizontal border-0">
+            <li class="list-group-item border-0"><span class="fw-bold">@Model.FollowingCount</span> <span class="text-secondary">Following</span></li>
+            <li class="list-group-item border-0"><span class="fw-bold">@Model.FollowersCount</span> <span class="text-secondary">Followers</span></li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <button type="button" id="btnTweets" class="nav-link active" aria-current="true">Tweets</button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" id="btnReTweets" class="nav-link">ReTweets</button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" id="btnLikes" class="nav-link">Likes</button>
+                </li>
+            </ul>
+        </div>
+
+        <div id="panelTweets">
+            @foreach (var tweet in Model.Tweets)
+            {
+                <div class="card-body">
+                    <div class="card-title">
+                        <span class="fw-bold">@tweet.Tweeter.UserName</span><span class="text-secondary"> · </span><span class="text-secondary">@tweet.CreationDateTime</span>
+                    </div>
+                    <p class="card-text">@tweet.Content</p>
+                </div>
+            }
+        </div>
+
+        <div id="panelReTweets" class="d-none">
+            @foreach (var reTweet in Model.RetweetedTweets)
+            {
+                <div class="card-body">
+                    <div class="card-title">
+                        <span class="fw-bold">@reTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@reTweet.OriginalTweetCreationDateTime</span>
+                    </div>
+                    <p class="card-text">@reTweet.OriginalTweetContent</p>
+                </div>
+            }
+        </div>
+
+        <div id="panelLikes" class="d-none">
+            @foreach (var likedTweet in Model.LikedTweetInfos)
+            {
+                <div class="card-body">
+                    <div class="card-title">
+                        <span class="fw-bold">@likedTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@likedTweet.OriginalTweetCreationDateTime</span>
+                    </div>
+                    <p class="card-text">@likedTweet.OriginalTweetContent</p>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+<script src="~/js/profilePage.js" asp-append-version="true"></script>
