@@ -113,7 +113,7 @@ namespace worsham.twitter.clone.Controllers
                     UserId = currentUser.Id,
                     UserName = currentUser.UserName,
                     Bio = currentUser.Bio,
-                    ProfilePictureUrl = currentUser.ProfilePictureUrl,
+                    ProfilePictureUrl = currentUser.ProfilePictureUrl ?? "\\default\\1.jpg",
                     FollowersCount = _context.Follows.Count(f => f.FollowedUserId == currentUser.Id),
                     FollowingCount = _context.Follows.Count(f => f.FollowerUserId == currentUser.Id),
                     Tweets = currentUser.Tweets.OrderByDescending(t => t.CreationDateTime).ToList(),
