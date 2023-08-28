@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
@@ -66,18 +58,20 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="followedUserId">The optional ID of the user whose profile is being viewed.</param>
         /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result.
-        /// If successful, displays the user's profile using the "UserProfile" view.
-        /// If the user does not exist, returns a "NotFound" response.
-        /// If an error occurs during the operation, redirects to the "Error" action of the "Home" controller.
+        /// Returns an <see cref="IActionResult"/> representing the action result. If successful,
+        /// displays the user's profile using the "UserProfile" view. If the user does not exist,
+        /// returns a "NotFound" response. If an error occurs during the operation, redirects to the
+        /// "Error" action of the "Home" controller.
         /// </returns>
         /// <remarks>
-        /// This action retrieves the profile data of a user. If a specific <paramref name="followedUserId"/> is provided,
-        /// the profile of that user is displayed. If no <paramref name="followedUserId"/> is provided or if the provided
-        /// ID matches the current user's ID, the profile of the current user is displayed. The method retrieves user data
-        /// including tweets, likes, retweets, followers count, and following count. If the user does not exist, a "NotFound"
-        /// response is returned. If an exception occurs during the retrieval or display of data, an error log is generated,
-        /// and the user is redirected to the "Error" action of the "Home" controller.
+        /// This action retrieves the profile data of a user. If a specific <paramref
+        /// name="followedUserId"/> is provided, the profile of that user is displayed. If no
+        /// <paramref name="followedUserId"/> is provided or if the provided ID matches the current
+        /// user's ID, the profile of the current user is displayed. The method retrieves user data
+        /// including tweets, likes, retweets, followers count, and following count. If the user
+        /// does not exist, a "NotFound" response is returned. If an exception occurs during the
+        /// retrieval or display of data, an error log is generated, and the user is redirected to
+        /// the "Error" action of the "Home" controller.
         /// </remarks>
         [HttpGet]
         public IActionResult Profile(int? followedUserId)
@@ -154,9 +148,8 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Users/Create To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
@@ -194,14 +187,14 @@ namespace worsham.twitter.clone.Controllers
                         throw;
                     }
                 }
-
             }
             return View(user);
         }
 
         private bool IsUniqueConstraintViolation(DbUpdateException ex)
         {
-            // Check if the exception message or inner exception message indicates a unique constraint violation
+            // Check if the exception message or inner exception message indicates a unique
+            // constraint violation
             return ex.InnerException?.Message.Contains("IX_Users_UserName") == true ||
                    ex.Message.Contains("IX_Users_UserName");
         }
@@ -226,7 +219,9 @@ namespace worsham.twitter.clone.Controllers
         /// Handles the HTTP POST request to edit a user's profile.
         /// </summary>
         /// <param name="UserId">The ID of the user to be edited.</param>
-        /// <param name="userProfile">The model containing user profile information and the uploaded profile picture.</param>
+        /// <param name="userProfile">
+        /// The model containing user profile information and the uploaded profile picture.
+        /// </param>
         /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -267,7 +262,6 @@ namespace worsham.twitter.clone.Controllers
                     await _context.SaveChangesAsync();
                     // Mark profile picture upload as successful
                     didProfilePictureUploadSucceed = true;
-
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -359,8 +353,7 @@ namespace worsham.twitter.clone.Controllers
 
             if (user != null)
             {
-                // Authentication successful
-                // Set up the session here
+                // Authentication successful Set up the session here
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("UserName", user.UserName);
 
