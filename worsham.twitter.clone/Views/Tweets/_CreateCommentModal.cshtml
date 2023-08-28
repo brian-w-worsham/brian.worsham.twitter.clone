@@ -10,26 +10,36 @@
                 <button type="button" class="btn-close mx-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                 <div class="card">
-                    <div class="card-body">
-                        <div class="card-title">
-                            <span class="fw-bold">@Model.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@Model.TimeAgo</span>
+                <div class="row g-0">
+                    <div class="col col-1">
+                        <img class="user-img rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{ViewData[Model.TweetId.ToString()]}")" asp-append-version="true" title="profile picture" />
+                    </div>
+                    <div class="col col-11">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-title">
+                                    <span class="fw-bold">@Model.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@Model.TimeAgo</span>
+                                </div>
+                                <p class="card-text">@Model.TweetContent</p>
+                                <p class="text-secondary fs-6">Replying to @Model.TweeterUserName</p>
+                            </div>
                         </div>
-                        <p class="card-text">@Model.TweetContent</p>
-                        <p class="text-secondary fs-6">Replying to @Model.TweeterUserName</p>
                     </div>
                 </div>
+
             </div>
             <div class="container">
-                <form asp-controller="Comments" asp-action="Create" method="post">
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <input type="hidden" name="OriginalTweetId" value="@Model.TweetId" />
-                    <input type="hidden" name="CommenterId" value="@Model.CurrentUserId" />
-                    <textarea asp-for="@comments.Content" id="commentsContent_@Model.Index" name="Content" class="form-control" rows="3" placeholder="Post your reply!"></textarea>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary m-2 rounded-pill">Reply</button>
-                    </div>
-                </form>
+                <div class="row">
+                    <form asp-controller="Comments" asp-action="Create" method="post" class="col mx-1">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <input type="hidden" name="OriginalTweetId" value="@Model.TweetId" />
+                        <input type="hidden" name="CommenterId" value="@Model.CurrentUserId" />
+                        <textarea asp-for="@comments.Content" id="commentsContent_@Model.Index" name="Content" class="form-control" rows="3" placeholder="Post your reply!"></textarea>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary m-2 rounded-pill">Reply</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -4,6 +4,10 @@
     ViewData["Title"] = $"{Model.UserName} / X";
     Layout = "~/Views/Shared/_AuthenticatedLayout.cshtml";
 
+    var DictOfTweeterProfilePictureNamess = ViewData["TweeterProfilePictureUrls"] as Dictionary<int, string>;
+    var DictOfRetweeterProfilePictureNames = ViewData["RetweeterProfilePictureUrls"] as Dictionary<int, string>;
+    var DictOfLikedProfilePictureUrls = ViewData["LikedProfilePictureUrls"] as Dictionary<int, string>;
+
     string profilePictureSrc = @Model.ProfilePictureUrl ?? "/uploads/profile_pictures/default/1.jpg";
     bool userIsViewingOwnProfile;
     bool isValidBoolViewing = Boolean.TryParse(ViewData["UserIsViewingOwnProfile"]?.ToString(), out userIsViewingOwnProfile);
@@ -68,37 +72,87 @@
         </div>
 
         <div id="panelTweets">
+            @{
+                string fileName = "\\default\\1.jpg";
+            }
             @foreach (var tweet in Model.Tweets)
             {
-                <div class="card-body">
-                    <div class="card-title">
-                        <span class="fw-bold">@tweet.Tweeter.UserName</span><span class="text-secondary"> · </span><span class="text-secondary">@tweet.CreationDateTime</span>
+                @* tweet.TweeterId *@
+                if (DictOfTweeterProfilePictureNamess.ContainsKey(tweet.Id))
+                {
+                    // store the value of the key in a variable
+                    fileName = DictOfTweeterProfilePictureNamess[tweet.Id];
+                }
+                <div class="row">
+                    <div class="col col-1">
+                        <img class="user-img rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{fileName}")" asp-append-version="true" title="profile picture" />
                     </div>
-                    <p class="card-text">@tweet.Content</p>
+                    <div class="col col-11">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <span class="fw-bold">@tweet.Tweeter.UserName</span><span class="text-secondary"> · </span><span class="text-secondary">@tweet.CreationDateTime</span>
+                            </div>
+                            <p class="card-text">@tweet.Content</p>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
 
+
+
         <div id="panelReTweets" class="d-none">
+            @{
+                string retweetFileName = "\\default\\1.jpg";
+            }
             @foreach (var reTweet in Model.RetweetedTweets)
             {
-                <div class="card-body">
-                    <div class="card-title">
-                        <span class="fw-bold">@reTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@reTweet.OriginalTweetCreationDateTime</span>
+
+                if (DictOfRetweeterProfilePictureNames.ContainsKey(reTweet.OriginalTweet.Id))
+                {
+                    // store the value of the key in a variable
+                    retweetFileName = DictOfRetweeterProfilePictureNames[reTweet.OriginalTweet.Id];
+                }
+                <div class="row">
+                    <div class="col col-1">
+                        <img class="user-img rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{retweetFileName}")" asp-append-version="true" title="profile picture" />
                     </div>
-                    <p class="card-text">@reTweet.OriginalTweetContent</p>
+                    <div class="col col-11">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <span class="fw-bold">@reTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@reTweet.OriginalTweetCreationDateTime</span>
+                            </div>
+                            <p class="card-text">@reTweet.OriginalTweetContent</p>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
 
         <div id="panelLikes" class="d-none">
+            @{
+                string likedTweetFileName = "\\default\\1.jpg";
+            }
             @foreach (var likedTweet in Model.LikedTweetInfos)
             {
-                <div class="card-body">
-                    <div class="card-title">
-                        <span class="fw-bold">@likedTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@likedTweet.OriginalTweetCreationDateTime</span>
+                if (DictOfLikedProfilePictureUrls.ContainsKey(likedTweet.LikedTweet.Id))
+                {
+                    // store the value of the key in a variable
+                    likedTweetFileName = DictOfLikedProfilePictureUrls[likedTweet.LikedTweet.Id];
+                }
+
+                <div class="row">
+                    <div class="col col-1">
+                        <img class="user-img rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{likedTweetFileName}")" asp-append-version="true" title="profile picture" />
                     </div>
-                    <p class="card-text">@likedTweet.OriginalTweetContent</p>
+                    <div class="col col-11">
+                        <div class="card-body">
+                            <div class="card-title">
+                                <span class="fw-bold">@likedTweet.OriginalUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@likedTweet.OriginalTweetCreationDateTime</span>
+                            </div>
+                            <p class="card-text">@likedTweet.OriginalTweetContent</p>
+                        </div>
+                    </div>
                 </div>
             }
         </div>

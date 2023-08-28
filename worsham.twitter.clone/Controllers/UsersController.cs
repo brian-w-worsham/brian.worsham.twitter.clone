@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace worsham.twitter.clone.Controllers
 {
@@ -54,84 +55,21 @@ namespace worsham.twitter.clone.Controllers
         }
 
         /// <summary>
-        /// Retrieves and displays a user's profile data.
+        /// Displays the profile of a user, either the current user's own profile or the profile of a user they are viewing.
         /// </summary>
-        /// <param name="followedUserId">The optional ID of the user whose profile is being viewed.</param>
-        /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result. If successful,
-        /// displays the user's profile using the "UserProfile" view. If the user does not exist,
-        /// returns a "NotFound" response. If an error occurs during the operation, redirects to the
-        /// "Error" action of the "Home" controller.
-        /// </returns>
-        /// <remarks>
-        /// This action retrieves the profile data of a user. If a specific <paramref
-        /// name="followedUserId"/> is provided, the profile of that user is displayed. If no
-        /// <paramref name="followedUserId"/> is provided or if the provided ID matches the current
-        /// user's ID, the profile of the current user is displayed. The method retrieves user data
-        /// including tweets, likes, retweets, followers count, and following count. If the user
-        /// does not exist, a "NotFound" response is returned. If an exception occurs during the
-        /// retrieval or display of data, an error log is generated, and the user is redirected to
-        /// the "Error" action of the "Home" controller.
-        /// </remarks>
+        /// <param name="followedUserId">The ID of the user whose profile is being viewed. If null, the current user's own profile is displayed.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the view of the user's profile.</returns>
         [HttpGet]
         public IActionResult Profile(int? followedUserId)
         {
             try
             {
-                int? userId;
+                int? userId = GetUserIdForProfileView(followedUserId);
+                UserProfileModel userProfile = GetUserProfile(userId);
 
-                if (followedUserId.HasValue && followedUserId.Value != _currentUserId)
-                {
-                    userId = followedUserId.Value; // Use the provided userId if available
-                    ViewData["UserIsViewingOwnProfile"] = false;
-                    // Check if the current user is following the user whose profile is being viewed
-                    bool currentUserIsFollowing = _context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId);
-                    ViewData["CurrentUserIsFollowing"] = currentUserIsFollowing;
-                    if (currentUserIsFollowing)
-                    {
-                        ViewData["FollowId"] = _context.Follows?.FirstOrDefault(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == userId)?.Id;
-                    }
-                }
-                else
-                {
-                    userId = _currentUserId; // Use the default _currentUserId if no userId is provided
-                    ViewData["UserIsViewingOwnProfile"] = true;
-                }
-
-                // Get the current user's data
-                Users? currentUser = _context?.Users?.Include(u => u.Tweets).Include(u => u.Likes).Include(u => u.ReTweets).FirstOrDefault(u => u.Id == userId);
-
-                if (currentUser == null)
-                {
-                    // Todo: display a notification to the user that the requested user was not found
-                    return NotFound();
-                }
-
-                // Create a custom profile model to hold the necessary data
-                UserProfileModel userProfile = new UserProfileModel
-                {
-                    UserId = currentUser.Id,
-                    UserName = currentUser.UserName,
-                    Bio = currentUser.Bio,
-                    ProfilePictureUrl = currentUser.ProfilePictureUrl ?? "\\default\\1.jpg",
-                    FollowersCount = _context.Follows.Count(f => f.FollowedUserId == currentUser.Id),
-                    FollowingCount = _context.Follows.Count(f => f.FollowerUserId == currentUser.Id),
-                    Tweets = currentUser.Tweets.OrderByDescending(t => t.CreationDateTime).ToList(),
-                    RetweetedTweets = _context.ReTweets.Where(r => r.RetweeterId == _currentUserId).OrderByDescending(r => r.OriginalTweet.CreationDateTime).Select(r => new RetweetedTweetInfo
-                    {
-                        OriginalTweet = r.OriginalTweet,
-                        OriginalUserName = r.OriginalTweet.Tweeter.UserName,
-                        OriginalTweetCreationDateTime = r.OriginalTweet.CreationDateTime,
-                        OriginalTweetContent = r.OriginalTweet.Content
-                    }).ToList(),
-                    LikedTweetInfos = _context.Likes.Where(l => l.UserThatLikedTweetId == _currentUserId).OrderByDescending(l => l.LikedTweet.CreationDateTime).Select(l => new LikedTweetInfo
-                    {
-                        LikedTweet = l.LikedTweet,
-                        OriginalUserName = l.LikedTweet.Tweeter.UserName,
-                        OriginalTweetCreationDateTime = l.LikedTweet.CreationDateTime,
-                        OriginalTweetContent = l.LikedTweet.Content
-                    }).ToList()
-                };
+                ViewData["TweeterProfilePictureUrls"] = GetProfilePictureUrls(userProfile.Tweets);
+                ViewData["RetweeterProfilePictureUrls"] = GetProfilePictureUrls(userProfile.RetweetedTweets.Select(r => r.OriginalTweet));
+                ViewData["LikedProfilePictureUrls"] = GetProfilePictureUrls(userProfile.LikedTweetInfos.Select(l => l.LikedTweet));
 
                 return View(userProfile);
             }
@@ -142,14 +80,174 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
+        /// <summary>
+        /// Determines the user ID for profile view based on whether the user is viewing their own profile or another user's profile.
+        /// </summary>
+        /// <param name="followedUserId">The user ID of the profile being viewed, if applicable.</param>
+        /// <returns>
+        /// If the user is viewing another user's profile, the user ID of the viewed profile. If the user is viewing their own profile, the current user's ID.
+        /// Returns null if an error occurs during the process.
+        /// </returns>
+        private int? GetUserIdForProfileView(int? followedUserId)
+        {
+            try
+            {
+                if (followedUserId.HasValue && followedUserId.Value != _currentUserId)
+                {
+                    ViewData["UserIsViewingOwnProfile"] = false;
+
+                    bool currentUserIsFollowing = _context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == followedUserId);
+                    ViewData["CurrentUserIsFollowing"] = currentUserIsFollowing;
+
+                    if (currentUserIsFollowing)
+                    {
+                        ViewData["FollowId"] = _context.Follows?.FirstOrDefault(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == followedUserId)?.Id;
+                    }
+
+                    _logger.LogInformation("User is viewing another user's profile. Current user ID: {CurrentUserId}, Viewed user ID: {ViewedUserId}", _currentUserId, followedUserId);
+
+                    return followedUserId;
+                }
+                else
+                {
+                    ViewData["UserIsViewingOwnProfile"] = true;
+
+                    _logger.LogInformation("User is viewing their own profile. User ID: {UserId}", _currentUserId);
+
+                    return _currentUserId;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while determining the user's profile view.");
+                // Handle the exception if needed
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves the user profile information for a given user.
+        /// </summary>
+        /// <param name="userId">The ID of the user for whom to retrieve the profile.</param>
+        /// <returns>The user profile model.</returns>
+        private UserProfileModel GetUserProfile(int? userId)
+        {
+            try
+            {
+                Users? currentUser = _context?.Users?.Include(u => u.Tweets).Include(u => u.Likes).Include(u => u.ReTweets).FirstOrDefault(u => u.Id == userId);
+
+                if (currentUser == null)
+                {
+                    _logger.LogWarning("User profile not found for user with ID: {UserId}", userId);
+                    // Todo: display a notification to the user that the requested user was not found
+                    throw new Exception("User not found.");
+                }
+
+                return new UserProfileModel
+                {
+                    UserId = currentUser.Id,
+                    UserName = currentUser.UserName,
+                    Bio = currentUser.Bio,
+                    ProfilePictureUrl = currentUser.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    FollowersCount = _context.Follows.Count(f => f.FollowedUserId == currentUser.Id),
+                    FollowingCount = _context.Follows.Count(f => f.FollowerUserId == currentUser.Id),
+                    Tweets = currentUser.Tweets.OrderByDescending(t => t.CreationDateTime).ToList(),
+                    RetweetedTweets = GetRetweetedTweets(userId),
+                    LikedTweetInfos = GetLikedTweets(userId)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving user profile for user with ID: {UserId}", userId);
+                throw; // Re-throw the exception for proper handling at a higher level
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves the retweeted tweets for a given user.
+        /// </summary>
+        /// <param name="userId">The ID of the user for whom to retrieve retweeted tweets.</param>
+        /// <returns>A list of retweeted tweet information.</returns>
+        private List<RetweetedTweetInfo> GetRetweetedTweets(int? userId)
+        {
+            return _context.ReTweets
+                .Where(r => r.RetweeterId == userId)
+                .OrderByDescending(r => r.OriginalTweet.CreationDateTime)
+                .Select(r => new RetweetedTweetInfo
+                {
+                    OriginalTweet = r.OriginalTweet,
+                    OriginalUserName = r.OriginalTweet.Tweeter.UserName,
+                    OriginalTweetCreationDateTime = r.OriginalTweet.CreationDateTime,
+                    OriginalTweetContent = r.OriginalTweet.Content
+                }).ToList();
+        }
+
+        /// <summary>
+        /// Retrieves the liked tweets for a given user.
+        /// </summary>
+        /// <param name="userId">The ID of the user for whom to retrieve liked tweets.</param>
+        /// <returns>A list of liked tweet information.</returns>
+        private List<LikedTweetInfo> GetLikedTweets(int? userId)
+        {
+            return _context.Likes
+                .Where(l => l.UserThatLikedTweetId == userId)
+                .OrderByDescending(l => l.LikedTweet.CreationDateTime)
+                .Select(l => new LikedTweetInfo
+                {
+                    LikedTweet = l.LikedTweet,
+                    OriginalUserName = l.LikedTweet.Tweeter.UserName,
+                    OriginalTweetCreationDateTime = l.LikedTweet.CreationDateTime,
+                    OriginalTweetContent = l.LikedTweet.Content
+                }).ToList();
+        }
+
+        /// <summary>
+        /// Retrieves the profile picture URLs associated with a collection of tweets.
+        /// </summary>
+        /// <param name="tweets">The collection of tweets for which to retrieve profile picture URLs.</param>
+        /// <returns>A dictionary containing tweet IDs as keys and their associated profile picture URLs as values.</returns>
+        private Dictionary<int, string> GetProfilePictureUrls(IEnumerable<Tweets> tweets)
+        {
+            Dictionary<int, string> profilePictureUrls = new Dictionary<int, string>();
+
+            try
+            {
+                foreach (var tweet in tweets)
+                {
+                    if (!profilePictureUrls.ContainsKey(tweet.Id))
+                    {
+                        var user = _context.Users.FirstOrDefault(u => u.Id == tweet.TweeterId);
+                        string profilePictureUrl = user?.ProfilePictureUrl ?? "\\default\\1.jpg";
+
+                        profilePictureUrls.Add(tweet.Id, profilePictureUrl);
+
+                        _logger.LogInformation("Profile picture URL retrieved for tweet ID {TweetId}: {ProfilePictureUrl}", tweet.Id, profilePictureUrl);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving profile picture URLs for tweets.");
+            }
+
+            return profilePictureUrls;
+        }
+
+
+
         // GET: Users/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Users/Create To protect from overposting attacks, enable the specific properties
-        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //// <summary>
+        /// Handles the HTTP POST request to create a new user.
+        /// </summary>
+        /// <param name="user">The user object containing the information for the new user.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
@@ -167,6 +265,9 @@ namespace worsham.twitter.clone.Controllers
                     }
 
                     await _authenticationService.RegisterUser(user, user.Password);
+
+                    _logger.LogInformation("User registered successfully: {Username}", user.UserName);
+
                     return RedirectToAction("DisplaySignInModal", "Home");
                 }
                 catch (DbUpdateException ex)
@@ -253,7 +354,7 @@ namespace worsham.twitter.clone.Controllers
 
                         _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
                     }
-                    
+
 
                     _context.Update(entity: new Users()
                     {
@@ -351,25 +452,49 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Handles the HTTP POST request for user login.
+        /// </summary>
+        /// <param name="userName">The username entered by the user.</param>
+        /// <param name="password">The password entered by the user.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
         public async Task<IActionResult> Login(string userName, string password)
         {
-            var user = await _authenticationService.AuthenticateUser(userName, password);
-
-            if (user != null)
+            try
             {
-                // Authentication successful Set up the session here
-                HttpContext.Session.SetInt32("UserId", user.Id);
-                HttpContext.Session.SetString("UserName", user.UserName);
+                var user = await _authenticationService.AuthenticateUser(userName, password);
 
-                return RedirectToAction("Index", "Tweets"); // Redirect to the feed page after login
+                if (user != null)
+                {
+                    // Authentication successful - Set up the session here
+                    HttpContext.Session.SetInt32("UserId", user.Id);
+                    HttpContext.Session.SetString("UserName", user.UserName);
+
+                    _logger.LogInformation("Successful login for user: {UserName}", user.UserName);
+
+                    return RedirectToAction("Index", "Tweets"); // Redirect to the feed page after login
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid credentials");
+
+                    _logger.LogWarning("Failed login attempt for user: {UserName}", userName);
+
+                    return View();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "Invalid credentials");
+                // Log exception
+                _logger.LogError(ex, "An error occurred during login");
+
+                // Handle the exception gracefully
+                ModelState.AddModelError("", "An error occurred during login. Please try again later.");
                 return View();
             }
         }
+
 
         [HttpPost]
         public IActionResult Logout()
