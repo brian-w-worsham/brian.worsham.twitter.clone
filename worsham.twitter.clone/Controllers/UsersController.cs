@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
@@ -19,12 +22,14 @@ namespace worsham.twitter.clone.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<UsersController> _logger;
         private int? _currentUserId;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger)
+        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _authenticationService = authenticationService;
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -222,23 +227,49 @@ namespace worsham.twitter.clone.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserName,Email,Password,Bio")] Users users)
+        public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
         {
-            if (id != users.Id)
+            if (UserId != userProfile.UserId)
             {
                 return NotFound();
             }
-
+            bool didProfilePictureUploadSucceed = false;
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(users);
+                    //string pathWithFileName = GenerateProfilePictureUrl(userProfile);
+                    //didProfilePictureUploadSucceed = await UploadProfilePicture(file: userProfile.FormFile, filePath: profilePictureUrl);
+
+                    //Save image to wwwroot/image
+                    string wwwRootPath = _webHostEnvironment.WebRootPath;
+                    Guid guid = Guid.NewGuid();
+                    string fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
+                    string extension = Path.GetExtension(userProfile.FormFile.FileName);
+                    fileName = fileName + extension;
+                    //string path = Path.Combine(wwwRootPath + "/Image/", userProfile.FormFile.FileName);
+                    string path = Path.Combine(wwwRootPath + "/uploads/profile_pictures/", fileName);
+
+                    using (var fileStream = new FileStream(path, FileMode.Create))
+                    {
+                        await userProfile.FormFile.CopyToAsync(fileStream);
+                    }
+
+                    _context.Update(entity: new Users() 
+                    { 
+                        Id = userProfile.UserId, 
+                        UserName = userProfile.UserName, 
+                        Bio = userProfile.Bio, 
+                        ProfilePictureUrl = fileName,
+                        // Get the user's email address to assign to the Users.Email property
+                        Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
+                        Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault()
+                    });
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsersExists(users.Id))
+                    if (!UsersExists(id: UserId))
                     {
                         return NotFound();
                     }
@@ -247,36 +278,78 @@ namespace worsham.twitter.clone.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                if (!didProfilePictureUploadSucceed)
+                {
+                    // todo: display a notification to the user that the profile picture upload failed
+                    ViewData["didProfilePictureUploadSucceed"] = false;
+                }
+                else
+                {
+                    ViewData["didProfilePictureUploadSucceed"] = true;
+                }
+                return RedirectToAction(actionName: "Profile", controllerName: "Users");
             }
-            return View(users);
+            return View(model: userProfile);
         }
 
-        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        /// <summary>
+        /// Uploads a profile picture for the authenticated user.
+        /// </summary>
+        /// <param name="file">The uploaded profile picture file.</param>
+        /// <returns>
+        /// Returns a boolean value indicating whether the file upload was successful or not.
+        /// </returns>
+        public async Task<bool> UploadProfilePicture(IFormFile file, string filePath)
         {
+            bool uploadSuccessful = false;
             // Get the authenticated user's ID
             int? userId = _currentUserId;
 
-            // Create a directory for the user's profile pictures
-            string profilePicturesPath = Path.Combine("wwwroot", "uploads", "profile_pictures", userId?.ToString());
-            Directory.CreateDirectory(profilePicturesPath);
-
-            // Generate a unique filename for the uploaded file
-            string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            string filePath = Path.Combine(profilePicturesPath, uniqueFileName);
-
-            // Save the file to the server
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                // Save the file to the server
+                using (FileStream? stream = new FileStream(path: _webHostEnvironment.WebRootPath + filePath, mode: FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                    uploadSuccessful = true; // Set to true after successful file save
+                }
+
+                _logger.LogInformation($"File '{file.FileName}' uploaded successfully for User ID: {userId}");
             }
-
-            // Save the file path (relative to wwwroot) to the user's profilePictureUrl property in the database
-            // UpdateUserProfilePictureUrl(userId, $"/uploads/profile_pictures/{userId}/{uniqueFileName}");
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading profile picture for User ID: {UserId}", userId);
+                return uploadSuccessful;
+            }
             // Redirect or return a response indicating success
-            return RedirectToAction("Profile", "User", new { id = userId });
+            return uploadSuccessful;
         }
+
+        //public string GenerateProfilePictureUrl(UserProfileModel userProfile)
+        //{
+        //    string wwwRootPath = _webHostEnvironment.WebRootPath;
+        //    //string path = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/{userProfile.UserId}/", userProfile.FormFile.FileName);
+        //    string path = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/");
+        //    // Create a directory for the user's profile pictures
+        //    DirectoryInfo directoryInfo = Directory.CreateDirectory(path);
+        //    //DirectoryInfo directoryInfo = new DirectoryInfo(path);
+        //    var result = directoryInfo.CreateSubdirectory(userProfile.UserId.ToString());
+        //    string pathWithFileName = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/{userProfile.UserId}/", userProfile.FormFile.FileName);
+
+        //    return pathWithFileName;
+        //}
+
+        //public string GenerateProfilePictureUrl(UserProfileModel userProfile)
+        //{
+        //    string wwwRootPath = _webHostEnvironment.WebRootPath;
+        //    string relativePath = $"/uploads/profile_pictures/{userProfile.UserId}/";
+        //    string fullPath = Path.Combine(wwwRootPath, relativePath);
+
+        //    // Create a directory for the user's profile pictures
+        //    Directory.CreateDirectory(fullPath);
+
+        //    return Path.Combine(relativePath, userProfile.FormFile.FileName);
+        //}
 
 
         // GET: Users/Delete/5
