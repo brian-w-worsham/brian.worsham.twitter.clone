@@ -14,15 +14,16 @@
     int followId;
     bool isValidBoolFollowId = Int32.TryParse(ViewData["FollowId"]?.ToString(), out followId);
 }
+<partial name="_EditProfileModal" />
 <div id="profile">
     <h2 class="mt-3 mb-0">@Model.UserName</h2>
     <div class="text-secondary small">@Model.Tweets.Count posts</div>
     <div class="card">
         <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop">
-        <img id="profilePicture" class="profile-picture rounded-circle" src="@profilePictureSrc" title="profile picture" />
+        <img id="profilePicture" class="profile-picture rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{Model.ProfilePictureUrl}")" asp-append-version="true" title="profile picture" />
         @if (isValidBoolViewing && userIsViewingOwnProfile)
         {
-            <button id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Edit profile</button>
+            <button id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal" autocomplete="off">Edit profile</button>
         }
         else
         {

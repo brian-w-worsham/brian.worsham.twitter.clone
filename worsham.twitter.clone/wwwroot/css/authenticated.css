@@ -1,4 +1,4 @@
-﻿body {
+body {
     font-family: "TwitterChirp",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 
@@ -107,6 +107,8 @@ input.post {
 #profile img.profile-backdrop {
     height: 12rem;
     background-color: #d0d9de;
+    background-image: linear-gradient(to right, rgba(255,255,255,0.00), rgba(255,255,255,1.00));
+    border: none;
 }
 
 #profile img.profile-picture {
@@ -132,6 +134,10 @@ input.post {
     background-color: rgba(255,255,255,1.00);
 }
 
-#profile .profile-btn:hover {
-    background-color: rgba(29, 155, 240, 0.1);
+    #profile .profile-btn:hover {
+        background-color: rgba(29, 155, 240, 0.1);
+    }
+
+textarea#textAreaBio {
+    min-height: 6rem;
 }

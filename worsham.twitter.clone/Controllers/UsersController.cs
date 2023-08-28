@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
@@ -19,12 +14,14 @@ namespace worsham.twitter.clone.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<UsersController> _logger;
         private int? _currentUserId;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger)
+        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _authenticationService = authenticationService;
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -61,18 +58,20 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="followedUserId">The optional ID of the user whose profile is being viewed.</param>
         /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result.
-        /// If successful, displays the user's profile using the "UserProfile" view.
-        /// If the user does not exist, returns a "NotFound" response.
-        /// If an error occurs during the operation, redirects to the "Error" action of the "Home" controller.
+        /// Returns an <see cref="IActionResult"/> representing the action result. If successful,
+        /// displays the user's profile using the "UserProfile" view. If the user does not exist,
+        /// returns a "NotFound" response. If an error occurs during the operation, redirects to the
+        /// "Error" action of the "Home" controller.
         /// </returns>
         /// <remarks>
-        /// This action retrieves the profile data of a user. If a specific <paramref name="followedUserId"/> is provided,
-        /// the profile of that user is displayed. If no <paramref name="followedUserId"/> is provided or if the provided
-        /// ID matches the current user's ID, the profile of the current user is displayed. The method retrieves user data
-        /// including tweets, likes, retweets, followers count, and following count. If the user does not exist, a "NotFound"
-        /// response is returned. If an exception occurs during the retrieval or display of data, an error log is generated,
-        /// and the user is redirected to the "Error" action of the "Home" controller.
+        /// This action retrieves the profile data of a user. If a specific <paramref
+        /// name="followedUserId"/> is provided, the profile of that user is displayed. If no
+        /// <paramref name="followedUserId"/> is provided or if the provided ID matches the current
+        /// user's ID, the profile of the current user is displayed. The method retrieves user data
+        /// including tweets, likes, retweets, followers count, and following count. If the user
+        /// does not exist, a "NotFound" response is returned. If an exception occurs during the
+        /// retrieval or display of data, an error log is generated, and the user is redirected to
+        /// the "Error" action of the "Home" controller.
         /// </remarks>
         [HttpGet]
         public IActionResult Profile(int? followedUserId)
@@ -149,9 +148,8 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Users/Create To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
@@ -189,14 +187,14 @@ namespace worsham.twitter.clone.Controllers
                         throw;
                     }
                 }
-
             }
             return View(user);
         }
 
         private bool IsUniqueConstraintViolation(DbUpdateException ex)
         {
-            // Check if the exception message or inner exception message indicates a unique constraint violation
+            // Check if the exception message or inner exception message indicates a unique
+            // constraint violation
             return ex.InnerException?.Message.Contains("IX_Users_UserName") == true ||
                    ex.Message.Contains("IX_Users_UserName");
         }
@@ -217,28 +215,59 @@ namespace worsham.twitter.clone.Controllers
             return View(users);
         }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Handles the HTTP POST request to edit a user's profile.
+        /// </summary>
+        /// <param name="UserId">The ID of the user to be edited.</param>
+        /// <param name="userProfile">
+        /// The model containing user profile information and the uploaded profile picture.
+        /// </param>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserName,Email,Password,Bio")] Users users)
+        public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
         {
-            if (id != users.Id)
+            if (UserId != userProfile.UserId)
             {
                 return NotFound();
             }
-
+            bool didProfilePictureUploadSucceed = false;
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(users);
+                    string wwwRootPath = _webHostEnvironment.WebRootPath;
+                    Guid guid = Guid.NewGuid();
+                    string fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
+                    string extension = Path.GetExtension(userProfile.FormFile.FileName);
+                    fileName = fileName + extension;
+                    string path = Path.Combine(wwwRootPath + "/uploads/profile_pictures/", fileName);
+
+                    using (var fileStream = new FileStream(path, FileMode.Create))
+                    {
+                        await userProfile.FormFile.CopyToAsync(fileStream);
+                    }
+
+                    _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+
+                    _context.Update(entity: new Users()
+                    {
+                        Id = userProfile.UserId,
+                        UserName = userProfile.UserName,
+                        Bio = userProfile.Bio,
+                        ProfilePictureUrl = fileName,
+                        Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
+                        Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault()
+                    });
                     await _context.SaveChangesAsync();
+                    // Mark profile picture upload as successful
+                    didProfilePictureUploadSucceed = true;
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsersExists(users.Id))
+                    _logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
+
+                    if (!UsersExists(id: UserId))
                     {
                         return NotFound();
                     }
@@ -247,37 +276,27 @@ namespace worsham.twitter.clone.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
+                }
+
+                if (!didProfilePictureUploadSucceed)
+                {
+                    // todo: display a notification to the user that the profile picture upload failed
+                    ViewData["didProfilePictureUploadSucceed"] = false;
+                }
+                else
+                {
+                    ViewData["didProfilePictureUploadSucceed"] = true;
+                }
+
+                _logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
+
+                return RedirectToAction(actionName: "Profile", controllerName: "Users");
             }
-            return View(users);
+            return View(model: userProfile);
         }
-
-        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
-        {
-            // Get the authenticated user's ID
-            int? userId = _currentUserId;
-
-            // Create a directory for the user's profile pictures
-            string profilePicturesPath = Path.Combine("wwwroot", "uploads", "profile_pictures", userId?.ToString());
-            Directory.CreateDirectory(profilePicturesPath);
-
-            // Generate a unique filename for the uploaded file
-            string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            string filePath = Path.Combine(profilePicturesPath, uniqueFileName);
-
-            // Save the file to the server
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Save the file path (relative to wwwroot) to the user's profilePictureUrl property in the database
-            // UpdateUserProfilePictureUrl(userId, $"/uploads/profile_pictures/{userId}/{uniqueFileName}");
-
-            // Redirect or return a response indicating success
-            return RedirectToAction("Profile", "User", new { id = userId });
-        }
-
 
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -334,8 +353,7 @@ namespace worsham.twitter.clone.Controllers
 
             if (user != null)
             {
-                // Authentication successful
-                // Set up the session here
+                // Authentication successful Set up the session here
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("UserName", user.UserName);
 
