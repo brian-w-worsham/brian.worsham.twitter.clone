@@ -222,9 +222,12 @@ namespace worsham.twitter.clone.Controllers
             return View(users);
         }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Handles the HTTP POST request to edit a user's profile.
+        /// </summary>
+        /// <param name="UserId">The ID of the user to be edited.</param>
+        /// <param name="userProfile">The model containing user profile information and the uploaded profile picture.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
@@ -238,16 +241,11 @@ namespace worsham.twitter.clone.Controllers
             {
                 try
                 {
-                    //string pathWithFileName = GenerateProfilePictureUrl(userProfile);
-                    //didProfilePictureUploadSucceed = await UploadProfilePicture(file: userProfile.FormFile, filePath: profilePictureUrl);
-
-                    //Save image to wwwroot/image
                     string wwwRootPath = _webHostEnvironment.WebRootPath;
                     Guid guid = Guid.NewGuid();
                     string fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
                     string extension = Path.GetExtension(userProfile.FormFile.FileName);
                     fileName = fileName + extension;
-                    //string path = Path.Combine(wwwRootPath + "/Image/", userProfile.FormFile.FileName);
                     string path = Path.Combine(wwwRootPath + "/uploads/profile_pictures/", fileName);
 
                     using (var fileStream = new FileStream(path, FileMode.Create))
@@ -255,20 +253,26 @@ namespace worsham.twitter.clone.Controllers
                         await userProfile.FormFile.CopyToAsync(fileStream);
                     }
 
-                    _context.Update(entity: new Users() 
-                    { 
-                        Id = userProfile.UserId, 
-                        UserName = userProfile.UserName, 
-                        Bio = userProfile.Bio, 
+                    _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+
+                    _context.Update(entity: new Users()
+                    {
+                        Id = userProfile.UserId,
+                        UserName = userProfile.UserName,
+                        Bio = userProfile.Bio,
                         ProfilePictureUrl = fileName,
-                        // Get the user's email address to assign to the Users.Email property
                         Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
                         Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault()
                     });
                     await _context.SaveChangesAsync();
+                    // Mark profile picture upload as successful
+                    didProfilePictureUploadSucceed = true;
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
+                    _logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
+
                     if (!UsersExists(id: UserId))
                     {
                         return NotFound();
@@ -278,6 +282,11 @@ namespace worsham.twitter.clone.Controllers
                         throw;
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
+                }
+
                 if (!didProfilePictureUploadSucceed)
                 {
                     // todo: display a notification to the user that the profile picture upload failed
@@ -287,70 +296,13 @@ namespace worsham.twitter.clone.Controllers
                 {
                     ViewData["didProfilePictureUploadSucceed"] = true;
                 }
+
+                _logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
+
                 return RedirectToAction(actionName: "Profile", controllerName: "Users");
             }
             return View(model: userProfile);
         }
-
-        /// <summary>
-        /// Uploads a profile picture for the authenticated user.
-        /// </summary>
-        /// <param name="file">The uploaded profile picture file.</param>
-        /// <returns>
-        /// Returns a boolean value indicating whether the file upload was successful or not.
-        /// </returns>
-        public async Task<bool> UploadProfilePicture(IFormFile file, string filePath)
-        {
-            bool uploadSuccessful = false;
-            // Get the authenticated user's ID
-            int? userId = _currentUserId;
-
-            try
-            {
-                // Save the file to the server
-                using (FileStream? stream = new FileStream(path: _webHostEnvironment.WebRootPath + filePath, mode: FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                    uploadSuccessful = true; // Set to true after successful file save
-                }
-
-                _logger.LogInformation($"File '{file.FileName}' uploaded successfully for User ID: {userId}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error uploading profile picture for User ID: {UserId}", userId);
-                return uploadSuccessful;
-            }
-            // Redirect or return a response indicating success
-            return uploadSuccessful;
-        }
-
-        //public string GenerateProfilePictureUrl(UserProfileModel userProfile)
-        //{
-        //    string wwwRootPath = _webHostEnvironment.WebRootPath;
-        //    //string path = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/{userProfile.UserId}/", userProfile.FormFile.FileName);
-        //    string path = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/");
-        //    // Create a directory for the user's profile pictures
-        //    DirectoryInfo directoryInfo = Directory.CreateDirectory(path);
-        //    //DirectoryInfo directoryInfo = new DirectoryInfo(path);
-        //    var result = directoryInfo.CreateSubdirectory(userProfile.UserId.ToString());
-        //    string pathWithFileName = Path.Combine(wwwRootPath + $"/uploads/profile_pictures/{userProfile.UserId}/", userProfile.FormFile.FileName);
-
-        //    return pathWithFileName;
-        //}
-
-        //public string GenerateProfilePictureUrl(UserProfileModel userProfile)
-        //{
-        //    string wwwRootPath = _webHostEnvironment.WebRootPath;
-        //    string relativePath = $"/uploads/profile_pictures/{userProfile.UserId}/";
-        //    string fullPath = Path.Combine(wwwRootPath, relativePath);
-
-        //    // Create a directory for the user's profile pictures
-        //    Directory.CreateDirectory(fullPath);
-
-        //    return Path.Combine(relativePath, userProfile.FormFile.FileName);
-        //}
-
 
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)
