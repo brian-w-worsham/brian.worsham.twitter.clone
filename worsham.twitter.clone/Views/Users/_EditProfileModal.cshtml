@@ -23,7 +23,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="inputPhoto" class="form-label">Add profile photo</label>
-                    <input asp-for="FormFile" accept="image/*" class="form-control" type="file" id="inputPhoto">
+                    <input asp-for="FormFile" accept="image/*" class="form-control" type="file" id="inputPhoto" value="@Model.ProfilePictureUrl">
                     <span asp-validation-for="FormFile" class="text-danger"></span>
                 </div>
             </div>

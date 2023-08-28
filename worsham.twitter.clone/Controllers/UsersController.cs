@@ -236,26 +236,31 @@ namespace worsham.twitter.clone.Controllers
             {
                 try
                 {
-                    string wwwRootPath = _webHostEnvironment.WebRootPath;
-                    Guid guid = Guid.NewGuid();
-                    string fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
-                    string extension = Path.GetExtension(userProfile.FormFile.FileName);
-                    fileName = fileName + extension;
-                    string path = Path.Combine(wwwRootPath + "/uploads/profile_pictures/", fileName);
-
-                    using (var fileStream = new FileStream(path, FileMode.Create))
+                    string fileName = null;
+                    if (userProfile.FormFile != null)
                     {
-                        await userProfile.FormFile.CopyToAsync(fileStream);
-                    }
+                        string wwwRootPath = _webHostEnvironment.WebRootPath;
+                        Guid guid = Guid.NewGuid();
+                        fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
+                        string extension = Path.GetExtension(userProfile.FormFile.FileName);
+                        fileName = fileName + extension;
+                        string path = Path.Combine(wwwRootPath + "/uploads/profile_pictures/", fileName);
 
-                    _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+                        using (var fileStream = new FileStream(path, FileMode.Create))
+                        {
+                            await userProfile.FormFile.CopyToAsync(fileStream);
+                        }
+
+                        _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+                    }
+                    
 
                     _context.Update(entity: new Users()
                     {
                         Id = userProfile.UserId,
                         UserName = userProfile.UserName,
                         Bio = userProfile.Bio,
-                        ProfilePictureUrl = fileName,
+                        ProfilePictureUrl = fileName ?? _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.ProfilePictureUrl).FirstOrDefault(),
                         Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
                         Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault()
                     });
