@@ -20,7 +20,6 @@
     <div class="text-secondary small">@Model.Tweets.Count posts</div>
     <div class="card">
         <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop">
-        @* <img id="profilePicture" class="profile-picture rounded-circle" decoding="async" src="@($"~/image/{Model.ProfilePictureUrl}")" asp-append-version="true" title="profile picture" /> *@
         <img id="profilePicture" class="profile-picture rounded-circle" decoding="async" src="@($"~/uploads/profile_pictures/{Model.ProfilePictureUrl}")" asp-append-version="true" title="profile picture" />
         @if (isValidBoolViewing && userIsViewingOwnProfile)
         {
