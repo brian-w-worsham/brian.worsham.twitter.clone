@@ -90,6 +90,8 @@ namespace worsham.twitter.clone.Controllers
                         Comments = tweet.Comments.ToList(),
                         Retweets = tweet.ReTweets.ToList()
                     });
+                    // store the user's ProfilePictureUrl in the ViewData dictionary
+                    ViewData[tweet.Id.ToString()] = (await _context.Users.FirstOrDefaultAsync(u => u.Id == tweet.TweeterId))?.ProfilePictureUrl ?? "\\default\\1.jpg";
                 }
 
                 tweetModels.Sort((item1, item2) => item1.TimeSincePosted.CompareTo(item2.TimeSincePosted));
