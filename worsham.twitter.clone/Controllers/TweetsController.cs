@@ -109,7 +109,7 @@ namespace worsham.twitter.clone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting tweets in the Index method");
-                return RedirectToAction("Error", "Home"); // todo: create custom error page to redirect to
+                return RedirectToAction("Error", "Home");
             }
         }
 
