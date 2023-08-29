@@ -8,10 +8,11 @@
             </div>
             <div class="modal-body">
                 <h2>Sign in to X</h2>
+                <div id="loginErrorMessage" class="text-danger"></div>
             </div>
             <div class="container">
 
-                <form asp-controller="Users" asp-action="Login" method="post">
+                <form id="loginForm" asp-controller="Users" asp-action="Login" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="form-group">
                         <label asp-for="UserName" class="control-label"></label>

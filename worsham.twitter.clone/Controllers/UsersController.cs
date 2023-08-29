@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Authentication;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace worsham.twitter.clone.Controllers
 {
@@ -55,9 +55,13 @@ namespace worsham.twitter.clone.Controllers
         }
 
         /// <summary>
-        /// Displays the profile of a user, either the current user's own profile or the profile of a user they are viewing.
+        /// Displays the profile of a user, either the current user's own profile or the profile of
+        /// a user they are viewing.
         /// </summary>
-        /// <param name="followedUserId">The ID of the user whose profile is being viewed. If null, the current user's own profile is displayed.</param>
+        /// <param name="followedUserId">
+        /// The ID of the user whose profile is being viewed. If null, the current user's own
+        /// profile is displayed.
+        /// </param>
         /// <returns>An <see cref="IActionResult"/> representing the view of the user's profile.</returns>
         [HttpGet]
         public IActionResult Profile(int? followedUserId)
@@ -81,12 +85,14 @@ namespace worsham.twitter.clone.Controllers
         }
 
         /// <summary>
-        /// Determines the user ID for profile view based on whether the user is viewing their own profile or another user's profile.
+        /// Determines the user ID for profile view based on whether the user is viewing their own
+        /// profile or another user's profile.
         /// </summary>
         /// <param name="followedUserId">The user ID of the profile being viewed, if applicable.</param>
         /// <returns>
-        /// If the user is viewing another user's profile, the user ID of the viewed profile. If the user is viewing their own profile, the current user's ID.
-        /// Returns null if an error occurs during the process.
+        /// If the user is viewing another user's profile, the user ID of the viewed profile. If the
+        /// user is viewing their own profile, the current user's ID. Returns null if an error
+        /// occurs during the process.
         /// </returns>
         private int? GetUserIdForProfileView(int? followedUserId)
         {
@@ -125,7 +131,6 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
-
         /// <summary>
         /// Retrieves the user profile information for a given user.
         /// </summary>
@@ -163,7 +168,6 @@ namespace worsham.twitter.clone.Controllers
                 throw; // Re-throw the exception for proper handling at a higher level
             }
         }
-
 
         /// <summary>
         /// Retrieves the retweeted tweets for a given user.
@@ -206,8 +210,12 @@ namespace worsham.twitter.clone.Controllers
         /// <summary>
         /// Retrieves the profile picture URLs associated with a collection of tweets.
         /// </summary>
-        /// <param name="tweets">The collection of tweets for which to retrieve profile picture URLs.</param>
-        /// <returns>A dictionary containing tweet IDs as keys and their associated profile picture URLs as values.</returns>
+        /// <param name="tweets">
+        /// The collection of tweets for which to retrieve profile picture URLs.
+        /// </param>
+        /// <returns>
+        /// A dictionary containing tweet IDs as keys and their associated profile picture URLs as values.
+        /// </returns>
         private Dictionary<int, string> GetProfilePictureUrls(IEnumerable<Tweets> tweets)
         {
             Dictionary<int, string> profilePictureUrls = new Dictionary<int, string>();
@@ -234,8 +242,6 @@ namespace worsham.twitter.clone.Controllers
 
             return profilePictureUrls;
         }
-
-
 
         // GET: Users/Create
         public IActionResult Create()
@@ -355,7 +361,6 @@ namespace worsham.twitter.clone.Controllers
                         _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
                     }
 
-
                     _context.Update(entity: new Users()
                     {
                         Id = userProfile.UserId,
@@ -465,36 +470,32 @@ namespace worsham.twitter.clone.Controllers
             {
                 var user = await _authenticationService.AuthenticateUser(userName, password);
 
-                if (user != null)
-                {
-                    // Authentication successful - Set up the session here
-                    HttpContext.Session.SetInt32("UserId", user.Id);
-                    HttpContext.Session.SetString("UserName", user.UserName);
+                // Authentication successful - Set up the session here
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("UserName", user.UserName);
 
-                    _logger.LogInformation("Successful login for user: {UserName}", user.UserName);
-
-                    return RedirectToAction("Index", "Tweets"); // Redirect to the feed page after login
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid credentials");
-
-                    _logger.LogWarning("Failed login attempt for user: {UserName}", userName);
-
-                    return View();
-                }
+                _logger.LogInformation("Successful login for user: {UserName}", user.UserName);
+                return Json(new LoginResult { Success = true });
+            }
+            catch (ArgumentException ex) // Replace AuthenticationException with the actual exception type
+            {
+                // Log the authentication exception
+                _logger.LogError(ex, ex.Message);
+                return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
+            }
+            catch (AuthenticationException ex) // Replace AuthenticationException with the actual exception type
+            {
+                // Log the authentication exception
+                _logger.LogError(ex, ex.Message);
+                return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
             }
             catch (Exception ex)
             {
-                // Log exception
-                _logger.LogError(ex, "An error occurred during login");
-
-                // Handle the exception gracefully
-                ModelState.AddModelError("", "An error occurred during login. Please try again later.");
-                return View();
+                // Log other exceptions
+                _logger.LogError(ex, ex.Message);
+                return Json(new LoginResult { Success = false, ErrorMessage = "An error occurred during login. Please try again later." });
             }
         }
-
 
         [HttpPost]
         public IActionResult Logout()
