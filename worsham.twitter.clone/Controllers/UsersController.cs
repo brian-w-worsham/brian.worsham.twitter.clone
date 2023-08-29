@@ -17,9 +17,10 @@ namespace worsham.twitter.clone.Controllers
         private int? _currentUserId;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UsersController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
+        public UsersController(TwitterCloneContext context, IHttpContextAccessor httpContextAccessor, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
             _authenticationService = authenticationService;
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
@@ -502,11 +503,37 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles the HTTP POST request for user logout, effectively ending the user's session.
+        /// </summary>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
+        /// <remarks>
+        /// This method clears the user's session, effectively logging them out from the application.
+        /// It removes all session data associated with the user, providing a secure way to end their session.
+        /// If the logout is successful, the method logs the event and redirects the user to the home page.
+        /// If an exception occurs during the logout process, the method logs the error and redirects to the error page.
+        /// </remarks>
         [HttpPost]
         public IActionResult Logout()
         {
-            _authenticationService.LogoutUser(_httpContextAccessor.HttpContext);
-            return RedirectToAction("Index", "Home"); // Redirect to the home page after logout
+            try
+            {
+                _authenticationService.LogoutUser(_httpContextAccessor.HttpContext);
+
+                // Log successful logout
+                _logger.LogInformation("User logged out successfully.");
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                // Log any errors that occur during logout
+                _logger.LogError(ex, "An error occurred during logout.");
+
+                // Handle the error appropriately, e.g., show an error page
+                return RedirectToAction("Error", "Home");
+            }
         }
+
     }
 }

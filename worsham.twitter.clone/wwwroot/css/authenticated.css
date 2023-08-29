@@ -14,6 +14,23 @@ a.nav-link {
         font-weight: 700;
     }
 
+input.nav-link {
+    display: block;
+    padding: .5rem 1rem;
+    color: rgb(15, 20, 25);
+    text-decoration: none;
+    border: none;
+    background-color: transparent;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out;
+}
+    input.nav-link:hover, input.nav-link:focus {
+        color: #0a58ca;
+    }
+
+    input.nav-link.active {
+        font-weight: 700;
+    }
+
 div.container-fluid.float-start.content {
     border: none;
     background-color: rgba(255,255,255,1.00);
