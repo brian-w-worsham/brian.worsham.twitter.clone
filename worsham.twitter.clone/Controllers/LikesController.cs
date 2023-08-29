@@ -16,14 +16,11 @@ namespace worsham.twitter.clone.Controllers
     public class LikesController : Controller
     {
         private readonly TwitterCloneContext _context;
-        private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<LikesController> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LikesController(TwitterCloneContext context, IAuthenticationService authenticationService, ILogger<LikesController> logger)
+        public LikesController(TwitterCloneContext context, ILogger<LikesController> logger)
         {
             _context = context;
-            _authenticationService = authenticationService;
             _logger = logger;
         }
 

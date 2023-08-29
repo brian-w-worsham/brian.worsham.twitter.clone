@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace worsham.twitter.clone
 {
@@ -17,6 +18,7 @@ namespace worsham.twitter.clone
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
