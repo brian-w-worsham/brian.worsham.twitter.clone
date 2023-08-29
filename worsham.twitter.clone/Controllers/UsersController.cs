@@ -249,11 +249,22 @@ namespace worsham.twitter.clone.Controllers
             return View();
         }
 
-        //// <summary>
-        /// Handles the HTTP POST request to create a new user.
+        /// <summary>
+        /// Handles the HTTP POST request for creating a new user account.
         /// </summary>
-        /// <param name="user">The user object containing the information for the new user.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
+        /// <param name="user">The <see cref="Users"/> object containing the user's registration data.</param>
+        /// <returns>
+        /// A JSON object indicating the success or failure of the account creation attempt.
+        /// If successful, the response contains a <c>success</c> value set to <c>true</c>.
+        /// If unsuccessful, the response contains a <c>success</c> value set to <c>false</c> and an <c>errorMessage</c> describing the reason for failure.
+        /// </returns>
+        /// <remarks>
+        /// This method handles the registration of a new user account by validating the input data,
+        /// checking if the username is already taken, and registering the user using the provided <see cref="IAuthenticationService"/>.
+        /// If the registration is successful, the method logs the event and returns a success JSON response.
+        /// If a <see cref="DbUpdateException"/> occurs, the method checks if it's a unique constraint violation and returns an appropriate JSON response.
+        /// For any other exceptions, the method logs the error and returns an error JSON response.
+        /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
@@ -266,36 +277,30 @@ namespace worsham.twitter.clone.Controllers
 
                     if (isUsernameTaken)
                     {
-                        ModelState.AddModelError("UserName", "This username is already taken.");
-                        return View(user);
+                        return Json(new { success = false, errorMessage = "This username is already taken." });
                     }
 
                     await _authenticationService.RegisterUser(user, user.Password);
 
                     _logger.LogInformation("User registered successfully: {Username}", user.UserName);
 
-                    return RedirectToAction("DisplaySignInModal", "Home");
+                    return Json(new { success = true });
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError(ex, "An error occurred while registering a user.");
-                    // Check if the exception message indicates a unique constraint violation
                     if (IsUniqueConstraintViolation(ex))
                     {
-                        ModelState.AddModelError("UserName", "This username is already taken.");
-                        // Log the unique constraint violation
                         _logger.LogWarning("Attempt to register with a non-unique username: {Username}", user.UserName);
-
-                        return View(user);
+                        return Json(new { success = false, errorMessage = "This username is already taken." });
                     }
                     else
                     {
-                        // Handle other exceptions as needed
-                        throw;
+                        _logger.LogError(ex, "An error occurred while registering a user.");
+                        return Json(new { success = false, errorMessage = "An error occurred while registering. Please try again later." });
                     }
                 }
             }
-            return View(user);
+            return Json(new { success = false, errorMessage = "Invalid input data." });
         }
 
         private bool IsUniqueConstraintViolation(DbUpdateException ex)
