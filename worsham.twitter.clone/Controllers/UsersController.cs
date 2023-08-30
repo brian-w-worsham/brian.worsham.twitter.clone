@@ -85,6 +85,7 @@ namespace worsham.twitter.clone.Controllers
                 ViewData["LikedProfilePictureUrls"] = GetProfilePictureUrls(userProfile.LikedTweetInfos.Select(l => l.LikedTweet));
                 ViewData["page"] = "profile";
 
+                ViewData["errorNotification"] = (string.IsNullOrEmpty(TempData["errorNotification"]?.ToString())) ? "" : TempData["errorNotification"]?.ToString();
                 return View(userProfile);
             }
             catch (Exception ex)
@@ -154,8 +155,8 @@ namespace worsham.twitter.clone.Controllers
 
                 if (currentUser == null)
                 {
-                    _logger.LogWarning("User profile not found for user with ID: {UserId}", userId);
-                    // Todo: display a notification to the user that the requested user was not found
+                    _logger.LogError("User profile not found for user with ID: {UserId}", userId);
+                    TempData["errorNotification"] = "An error occurred. The requested user profile was not found.";
                     throw new Exception("User not found.");
                 }
 
@@ -414,7 +415,7 @@ namespace worsham.twitter.clone.Controllers
 
                 if (!didProfilePictureUploadSucceed)
                 {
-                    // todo: display a notification to the user that the profile picture upload failed
+                    TempData["errorNotification"] = "An error occurred. The user's profile picture upload failed.";
                     ViewData["didProfilePictureUploadSucceed"] = false;
                 }
                 else

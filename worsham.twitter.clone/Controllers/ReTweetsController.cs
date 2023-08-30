@@ -104,23 +104,20 @@ namespace worsham.twitter.clone.Controllers
                 else
                 {
                     _logger.LogWarning("Model state is invalid. Validation errors: {ValidationErrors}", ModelState.Values.SelectMany(v => v.Errors));
-                    //Todo: render a notification to the user that the retweet failed
-                    ViewData["LikeFailed"] = true;
+                    TempData["errorNotification"] = "An error occurred while processing the re-tweet";
                     return RedirectToAction(actionName: "Index", controllerName: "Tweets");
                 }
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a ReTweet in the Create method");
-                //Todo: render a notification to the user that the retweet failed
-                ViewData["LikeFailed"] = true;
+                TempData["errorNotification"] = "An error occurred while processing the re-tweet";
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting creating a ReTweet in the Create method");
-                //Todo: render a notification to the user that the retweet failed
-                ViewData["ReTweetFailed"] = true;
+                TempData["errorNotification"] = "An error occurred while processing the re-tweet";
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
         }
