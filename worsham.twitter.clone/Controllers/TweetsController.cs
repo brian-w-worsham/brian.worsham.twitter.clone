@@ -113,6 +113,8 @@ namespace worsham.twitter.clone.Controllers
                 );
 
                 ViewData["page"] = "tweets";
+                ViewData["errorNotification"] = (string.IsNullOrEmpty(TempData["errorNotification"]?.ToString())) ? "" : TempData["errorNotification"]?.ToString();
+
 
                 return View(tweetsFeedViewModel);
             }
@@ -178,17 +180,15 @@ namespace worsham.twitter.clone.Controllers
                             _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
                         }
                     }
-                    // Todo: render a notification to the user that the tweet creation failed
+
+                    TempData["errorNotification"] = "An error occurred, and we were not able to process your tweet.";
                     return RedirectToAction(nameof(Index));
                 }
             }
             catch (Exception ex)
             {
-                // Log any unexpected exceptions that might occur during tweet creation
                 _logger.LogError(ex, "An error occurred while creating a new tweet.");
-
-                //Todo: render a notification to the user that the tweet creation failed
-                ViewData["TweetFailed"] = true;
+                TempData["errorNotification"] = "An error occurred, and we were not able to process your tweet.";
                 return RedirectToAction("Index", "Tweets");
             }
         }

@@ -103,23 +103,20 @@ namespace worsham.twitter.clone.Controllers
                 }
                 else
                 {
-                    // Todo: render a notification to the user that the like failed
-                    ViewData["LikeFailed"] = true;
+                    TempData["errorNotification"] = "An error occurred while saving the like for the tweet.";
                     return RedirectToAction(actionName: "Index", controllerName: "Tweets");
                 }
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a Like in the Create method");
-                // Todo: render a notification to the user that the like failed
-                ViewData["LikeFailed"] = true;
+                TempData["errorNotification"] = "An error occurred while saving the like for the tweet.";
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting creating a Like in the Create method");
-                // Todo: render a notification to the user that the like failed
-                ViewData["LikeFailed"] = true;
+                TempData["errorNotification"] = "An error occurred while saving the like for the tweet.";
                 return RedirectToAction(actionName: "Index", controllerName: "Tweets");
             }
         }

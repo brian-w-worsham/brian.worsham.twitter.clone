@@ -62,8 +62,7 @@ namespace worsham.twitter.clone.Controllers
         /// </returns>
         /// <remarks>
         /// If the ModelState is invalid, this method logs validation errors using the provided
-        /// logger. It also contains a "Todo" comment indicating the intention to render a
-        /// notification to the user in case of failure.
+        /// logger.
         /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -85,7 +84,7 @@ namespace worsham.twitter.clone.Controllers
                         _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
                     }
                 }
-                // Todo: render a notification to the user that the comment creation failed
+                TempData["errorNotification"] = "Comment creation failed.";
                 return RedirectToAction("Index", "Tweets");
             }
         }

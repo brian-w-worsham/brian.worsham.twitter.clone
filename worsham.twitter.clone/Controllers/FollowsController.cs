@@ -199,7 +199,7 @@ namespace worsham.twitter.clone.Controllers
                 if (_context.Follows == null)
                 {
                     _logger.LogError("Follows entity model is null");
-                    // Todo: return a notification to the user that the unfollow failed
+                    TempData["errorNotification"] = "An error occurred while attempting to unfollow.";
                     return RedirectToAction("Profile", "Users");
                 }
 
@@ -223,7 +223,7 @@ namespace worsham.twitter.clone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while deleting a Follow.");
-                // Todo: return a notification to the user that the unfollow failed
+                TempData["errorNotification"] = "An error occurred while attempting to unfollow.";
                 return RedirectToAction("Profile", "Users");
             }
         }
