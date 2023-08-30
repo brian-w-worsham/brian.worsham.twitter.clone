@@ -83,6 +83,7 @@ namespace worsham.twitter.clone.Controllers
                 ViewData["TweeterProfilePictureUrls"] = GetProfilePictureUrls(userProfile.Tweets);
                 ViewData["RetweeterProfilePictureUrls"] = GetProfilePictureUrls(userProfile.RetweetedTweets.Select(r => r.OriginalTweet));
                 ViewData["LikedProfilePictureUrls"] = GetProfilePictureUrls(userProfile.LikedTweetInfos.Select(l => l.LikedTweet));
+                ViewData["page"] = "profile";
 
                 return View(userProfile);
             }

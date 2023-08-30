@@ -112,6 +112,8 @@ namespace worsham.twitter.clone.Controllers
                     currentUserId: _currentUserId
                 );
 
+                ViewData["page"] = "tweets";
+
                 return View(tweetsFeedViewModel);
             }
             catch (Exception ex)

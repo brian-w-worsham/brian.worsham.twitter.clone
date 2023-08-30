@@ -20,7 +20,7 @@
                     </svg>
                 </a>
             </h1>
-            <a class="nav-link active" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
+            <a class="nav-link @((ViewData["page"]?.ToString()?.ToLower() == "tweets") ? "active" : "")" aria-current="page" asp-controller="Home" asp-action="Index">Home</a>
             <a class="nav-link disabled">Explore</a>
             <a class="nav-link disabled">Notifications</a>
             <a class="nav-link disabled">Messages</a>
@@ -28,7 +28,7 @@
             <a class="nav-link disabled">Bookmarks</a>
             <a class="nav-link disabled">Communities</a>
             <a class="nav-link disabled">Verified</a>
-            <a class="nav-link" asp-controller="Users" asp-action="Profile">Profile</a>
+            <a class="nav-link @((ViewData["page"]?.ToString()?.ToLower() == "profile") ? "active" : "")" asp-controller="Users" asp-action="Profile">Profile</a>
             <a class="nav-link disabled">More</a>
             <form asp-action="Logout" asp-controller="Users" method="post" >
                 <input type="submit" class="nav-link" value="Logout" />
