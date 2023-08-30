@@ -3,12 +3,16 @@
         event.preventDefault(); // Prevent the default form submission
 
         const form = $(this);
-        const formData = form.serialize(); // Serialize form data
+        const formData = {
+            UserName: form.find('[name="UserName"]').val(),
+            Password: form.find('[name="Password"]').val()
+        };
 
         $.ajax({
             type: "POST",
             url: form.attr("action"),
-            data: formData,
+            data: JSON.stringify(formData), // Convert to JSON string
+            contentType: "application/json", // Set the content type to JSON
             dataType: "json",
             success: function (result) {
                 if (result.success) {

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Controllers
@@ -62,11 +57,13 @@ namespace worsham.twitter.clone.Controllers
         /// <param name="comments">The comment to be created.</param>
         /// <returns>
         /// If the ModelState is valid, redirects to the "Index" action of the "Tweets" controller.
-        /// If the ModelState is invalid, logs validation errors, and redirects to the "Index" action of the "Tweets" controller.
+        /// If the ModelState is invalid, logs validation errors, and redirects to the "Index"
+        /// action of the "Tweets" controller.
         /// </returns>
         /// <remarks>
-        /// If the ModelState is invalid, this method logs validation errors using the provided logger.
-        /// It also contains a "Todo" comment indicating the intention to render a notification to the user in case of failure.
+        /// If the ModelState is invalid, this method logs validation errors using the provided
+        /// logger. It also contains a "Todo" comment indicating the intention to render a
+        /// notification to the user in case of failure.
         /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -90,7 +87,7 @@ namespace worsham.twitter.clone.Controllers
                 }
                 // Todo: render a notification to the user that the comment creation failed
                 return RedirectToAction("Index", "Tweets");
-            }            
+            }
         }
 
         // GET: Comments/Edit/5
@@ -111,9 +108,8 @@ namespace worsham.twitter.clone.Controllers
             return View(comments);
         }
 
-        // POST: Comments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Comments/Edit/5 To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Content,OriginalTweetId,CommenterId")] Comments comments)
@@ -182,14 +178,14 @@ namespace worsham.twitter.clone.Controllers
             {
                 _context.Comments.Remove(comments);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CommentsExists(int id)
         {
-          return (_context.Comments?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Comments?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

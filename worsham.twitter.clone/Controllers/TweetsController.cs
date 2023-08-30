@@ -29,10 +29,18 @@ namespace worsham.twitter.clone.Controllers
         /// Displays the user's tweets and the tweets from the people they follow on the tweets feed page.
         /// </summary>
         /// <returns>The tweets feed view containing the tweets.</returns>
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             try
             {
+                // Check whether the user is logged in. If they are not logged in redirect them to
+                // the Home/Index view.
+                if (_currentUserId == null)
+                {
+                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    return RedirectToAction("Index", "Home");
+                }
                 // Get the IDs of the people the current user follows
                 IQueryable<int>? followedUserIds = _context.Follows
                     .Where(f => f.FollowerUserId == _currentUserId)
@@ -137,8 +145,9 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="postModel">The data model containing the content of the new tweet.</param>
         /// <returns>
-        /// If the ModelState is valid, adds a new tweet to the database and redirects to the tweets feed page.
-        /// If the ModelState is invalid, logs the validation errors, and redirects to the tweets feed page.
+        /// If the ModelState is valid, adds a new tweet to the database and redirects to the tweets
+        /// feed page. If the ModelState is invalid, logs the validation errors, and redirects to
+        /// the tweets feed page.
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -199,9 +208,8 @@ namespace worsham.twitter.clone.Controllers
             return View(tweets);
         }
 
-        // POST: Tweets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Tweets/Edit/5 To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Content,CreationDateTime,TweeterId")] Tweets tweets)

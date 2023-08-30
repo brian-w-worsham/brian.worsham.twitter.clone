@@ -69,6 +69,14 @@ namespace worsham.twitter.clone.Controllers
         {
             try
             {
+                // Check whether the user is logged in. If they are not logged in redirect them to
+                // the Home/Index view.
+                if (_currentUserId == null)
+                {
+                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    return RedirectToAction("Index", "Home");
+                }
+
                 int? userId = GetUserIdForProfileView(followedUserId);
                 UserProfileModel userProfile = GetUserProfile(userId);
 
@@ -253,18 +261,23 @@ namespace worsham.twitter.clone.Controllers
         /// <summary>
         /// Handles the HTTP POST request for creating a new user account.
         /// </summary>
-        /// <param name="user">The <see cref="Users"/> object containing the user's registration data.</param>
+        /// <param name="user">
+        /// The <see cref="Users"/> object containing the user's registration data.
+        /// </param>
         /// <returns>
-        /// A JSON object indicating the success or failure of the account creation attempt.
-        /// If successful, the response contains a <c>success</c> value set to <c>true</c>.
-        /// If unsuccessful, the response contains a <c>success</c> value set to <c>false</c> and an <c>errorMessage</c> describing the reason for failure.
+        /// A JSON object indicating the success or failure of the account creation attempt. If
+        /// successful, the response contains a <c>success</c> value set to <c>true</c>. If
+        /// unsuccessful, the response contains a <c>success</c> value set to <c>false</c> and an
+        /// <c>errorMessage</c> describing the reason for failure.
         /// </returns>
         /// <remarks>
         /// This method handles the registration of a new user account by validating the input data,
-        /// checking if the username is already taken, and registering the user using the provided <see cref="IAuthenticationService"/>.
-        /// If the registration is successful, the method logs the event and returns a success JSON response.
-        /// If a <see cref="DbUpdateException"/> occurs, the method checks if it's a unique constraint violation and returns an appropriate JSON response.
-        /// For any other exceptions, the method logs the error and returns an error JSON response.
+        /// checking if the username is already taken, and registering the user using the provided
+        /// <see cref="IAuthenticationService"/>. If the registration is successful, the method logs
+        /// the event and returns a success JSON response. If a <see cref="DbUpdateException"/>
+        /// occurs, the method checks if it's a unique constraint violation and returns an
+        /// appropriate JSON response. For any other exceptions, the method logs the error and
+        /// returns an error JSON response.
         /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -457,12 +470,6 @@ namespace worsham.twitter.clone.Controllers
             return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
         /// <summary>
         /// Handles the HTTP POST request for user login.
         /// </summary>
@@ -470,11 +477,11 @@ namespace worsham.twitter.clone.Controllers
         /// <param name="password">The password entered by the user.</param>
         /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         [HttpPost]
-        public async Task<IActionResult> Login(string userName, string password)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                var user = await _authenticationService.AuthenticateUser(userName, password);
+                var user = await _authenticationService.AuthenticateUser(loginDto.UserName, loginDto.Password);
 
                 // Authentication successful - Set up the session here
                 HttpContext.Session.SetInt32("UserId", user.Id);
@@ -508,10 +515,11 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
         /// <remarks>
-        /// This method clears the user's session, effectively logging them out from the application.
-        /// It removes all session data associated with the user, providing a secure way to end their session.
-        /// If the logout is successful, the method logs the event and redirects the user to the home page.
-        /// If an exception occurs during the logout process, the method logs the error and redirects to the error page.
+        /// This method clears the user's session, effectively logging them out from the
+        /// application. It removes all session data associated with the user, providing a secure
+        /// way to end their session. If the logout is successful, the method logs the event and
+        /// redirects the user to the home page. If an exception occurs during the logout process,
+        /// the method logs the error and redirects to the error page.
         /// </remarks>
         [HttpPost]
         public IActionResult Logout()
@@ -534,6 +542,5 @@ namespace worsham.twitter.clone.Controllers
                 return RedirectToAction("Error", "Home");
             }
         }
-
     }
 }
