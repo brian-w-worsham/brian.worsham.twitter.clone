@@ -1,11 +1,18 @@
-﻿using worsham.twitter.clone.Models.EntityModels;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Models
 {
     public class UserProfileModel
     {
         public int UserId { get; set; }
+        [Required]
+        [StringLength(20)]
+        [Unicode(false)]
         public string UserName { get; set; }
+        [StringLength(160)]
+        [Unicode(false)]
         public string? Bio { get; set; }
         public string? ProfilePictureUrl { get; set; }
         public IFormFile? FormFile { get; set; }
