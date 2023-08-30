@@ -1,8 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
-using Microsoft.AspNetCore.Http;
 
 namespace worsham.twitter.clone
 {
@@ -26,6 +25,15 @@ namespace worsham.twitter.clone
                 options.Cookie.IsEssential = true;
             });
 
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.LoginPath = "/Users/Login"; // Specify the login path
+                options.LogoutPath = "/Users/Logout"; // Specify the logout path
+            });
+
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             builder.Services.AddControllersWithViews();
@@ -47,6 +55,7 @@ namespace worsham.twitter.clone
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

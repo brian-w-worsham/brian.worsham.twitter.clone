@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Controllers
@@ -69,13 +64,14 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="userId">The ID of the user to be followed.</param>
         /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result after creating the follow.
-        /// If successful, redirects to the "Index" action of the "Tweets" controller.
+        /// Returns an <see cref="IActionResult"/> representing the action result after creating the
+        /// follow. If successful, redirects to the "Index" action of the "Tweets" controller.
         /// </returns>
         /// <remarks>
-        /// If the ModelState is valid, a new follow relationship is created and saved in the database.
-        /// Logs information about the follow creation. If the ModelState is invalid or an exception occurs,
-        /// appropriate error logging is performed and a redirection to the "Index" action of the "Tweets" controller is executed.
+        /// If the ModelState is valid, a new follow relationship is created and saved in the
+        /// database. Logs information about the follow creation. If the ModelState is invalid or an
+        /// exception occurs, appropriate error logging is performed and a redirection to the
+        /// "Index" action of the "Tweets" controller is executed.
         /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -120,9 +116,8 @@ namespace worsham.twitter.clone.Controllers
             return View(follows);
         }
 
-        // POST: Follows/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Follows/Edit/5 To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FollowedUserId,FollowerUserId")] Follows follows)
@@ -182,16 +177,18 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="id">The ID of the Follows entity to be deleted.</param>
         /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result.
-        /// If successful, redirects to the "Profile" action of the "Users" controller with the FollowedUserId as a route value.
-        /// If an error occurs during the operation, redirects to the "Profile" action of the "Users" controller and logs the error.
+        /// Returns an <see cref="IActionResult"/> representing the action result. If successful,
+        /// redirects to the "Profile" action of the "Users" controller with the FollowedUserId as a
+        /// route value. If an error occurs during the operation, redirects to the "Profile" action
+        /// of the "Users" controller and logs the error.
         /// </returns>
         /// <remarks>
-        /// This action attempts to delete a Follows entity based on the provided ID. If the Follows entity exists,
-        /// it is removed from the context. After deletion, a log message is generated. If the Follows entity
-        /// does not exist, a warning log message is generated. The operation is logged. After the operation,
-        /// the user is redirected to the "Profile" action of the "Users" controller with the FollowedUserId as a route value.
-        /// If an exception occurs, an error log message is generated, and the user is redirected with a status code 500.
+        /// This action attempts to delete a Follows entity based on the provided ID. If the Follows
+        /// entity exists, it is removed from the context. After deletion, a log message is
+        /// generated. If the Follows entity does not exist, a warning log message is generated. The
+        /// operation is logged. After the operation, the user is redirected to the "Profile" action
+        /// of the "Users" controller with the FollowedUserId as a route value. If an exception
+        /// occurs, an error log message is generated, and the user is redirected with a status code 500.
         /// </remarks>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -231,29 +228,30 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
-
         // GET: api/follows/notfollowed
         /// <summary>
-        /// Retrieves a list of users who are not followed by the current user, excluding the current user.
+        /// Retrieves a list of users who are not followed by the current user, excluding the
+        /// current user.
         /// </summary>
         /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result.
-        /// If successful, returns a list of users in JSON format who are not followed by the current user.
-        /// If an error occurs, returns a status code 500 along with an error message.
+        /// Returns an <see cref="IActionResult"/> representing the action result. If successful,
+        /// returns a list of users in JSON format who are not followed by the current user. If an
+        /// error occurs, returns a status code 500 along with an error message.
         /// </returns>
         /// <remarks>
         /// This endpoint queries the database for users who are not followed by the current user.
-        /// It excludes the current user from the list and returns a list of users' IDs and usernames.
-        /// If no errors occur during the query and processing, a log message is generated to indicate
-        /// the number of users retrieved. If an exception occurs, an error log message is generated
-        /// and a status code 500 response is returned with an error message.
+        /// It excludes the current user from the list and returns a list of users' IDs and
+        /// usernames. If no errors occur during the query and processing, a log message is
+        /// generated to indicate the number of users retrieved. If an exception occurs, an error
+        /// log message is generated and a status code 500 response is returned with an error message.
         /// </remarks>
         [HttpGet("api/follows/notfollowed")]
         public IActionResult UsersNotFollowed()
         {
             try
             {
-                // Query users who are not followed by the current user, but exclude the current user from this list
+                // Query users who are not followed by the current user, but exclude the current
+                // user from this list
                 var notFollowedUsers = _context.Users
                     .Where(u => !_context.Follows.Any(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == u.Id) && u.Id != _currentUserId)
                     .Select(u => new { u.Id, u.UserName }) // Return only relevant data

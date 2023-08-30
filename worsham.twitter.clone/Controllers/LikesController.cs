@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
-using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
@@ -64,10 +56,12 @@ namespace worsham.twitter.clone.Controllers
         /// </summary>
         /// <param name="tweetId">The ID of the tweet being liked or unliked.</param>
         /// <returns>
-        /// If the ModelState is valid and the like operation succeeds, redirects to the tweets feed page.
-        /// If the ModelState is invalid, renders a notification to the user in the view and redirects to the tweets feed page.
-        /// If a database update exception occurs during the like operation, logs the error, renders a notification to the user, and redirects to the tweets feed page.
-        /// If any other exception occurs during the like operation, logs the error and redirects to the error page.
+        /// If the ModelState is valid and the like operation succeeds, redirects to the tweets feed
+        /// page. If the ModelState is invalid, renders a notification to the user in the view and
+        /// redirects to the tweets feed page. If a database update exception occurs during the like
+        /// operation, logs the error, renders a notification to the user, and redirects to the
+        /// tweets feed page. If any other exception occurs during the like operation, logs the
+        /// error and redirects to the error page.
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -77,7 +71,7 @@ namespace worsham.twitter.clone.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Get the authenticated user's ID             
+                    // Get the authenticated user's ID
                     int? userThatLikedTweetId = HttpContext.Session.GetInt32("UserId");
                     _logger.LogInformation(message: "User ID retrieved from session: {UserId}", userThatLikedTweetId);
 
@@ -95,7 +89,7 @@ namespace worsham.twitter.clone.Controllers
                         //Create a new Likes instance with the correct user ID and liked tweet ID
                         var like = new Likes
                         {
-                            LikedTweetId = tweetId, 
+                            LikedTweetId = tweetId,
                             UserThatLikedTweetId = (int)userThatLikedTweetId
                         };
 
@@ -153,9 +147,8 @@ namespace worsham.twitter.clone.Controllers
             return View(likes);
         }
 
-        // POST: Likes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Likes/Edit/5 To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,LikedTweetId,UserThatLikedTweetId")] Likes likes)

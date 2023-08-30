@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 
 namespace worsham.twitter.clone.Controllers
@@ -59,7 +54,9 @@ namespace worsham.twitter.clone.Controllers
         /// <summary>
         /// Handles the creation or removal of retweets for a tweet by the authenticated user.
         /// </summary>
-        /// <param name="tweetId">The ID of the tweet for which the retweet is being created or removed.</param>
+        /// <param name="tweetId">
+        /// The ID of the tweet for which the retweet is being created or removed.
+        /// </param>
         /// <returns>Redirects to the Tweets Index page after the retweet operation.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -69,7 +66,7 @@ namespace worsham.twitter.clone.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Get the authenticated user's ID             
+                    // Get the authenticated user's ID
                     int? currentUserId = HttpContext.Session.GetInt32("UserId");
                     _logger.LogInformation(message: "User ID retrieved from session: {UserId}", currentUserId);
 
@@ -96,7 +93,7 @@ namespace worsham.twitter.clone.Controllers
                         // Add the new retweet to the database
                         _ = _context?.Add(entity: retweet);
                     }
-                    
+
                     // Save the changes to the database
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("Retweet {Operation} successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", userHasRetweetedTweet ? "removed" : "created", tweetId, currentUserId);
@@ -146,9 +143,8 @@ namespace worsham.twitter.clone.Controllers
             return View(reTweets);
         }
 
-        // POST: ReTweets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: ReTweets/Edit/5 To protect from overposting attacks, enable the specific properties
+        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,OriginalTweetId,ReTweetCreationDateTime,RetweeterId")] ReTweets reTweets)
