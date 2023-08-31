@@ -89,6 +89,7 @@ namespace worsham.twitter.clone.Services
                 await ValidateUserInput(user, password);
 
                 user.Password = HashPassword(password);
+                user.UserRole = "user"; // default role is user
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();

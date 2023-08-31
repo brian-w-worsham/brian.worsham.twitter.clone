@@ -2,30 +2,50 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models.EntityModels;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class ReTweetsController : Controller
+    public class ReTweetsController : TwitterController
     {
         private readonly TwitterCloneContext _context;
-        private readonly ILogger<LikesController> _logger;
 
-        public ReTweetsController(TwitterCloneContext context, ILogger<LikesController> logger)
+        public ReTweetsController(TwitterCloneContext context, ILogger<ReTweetsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
-            _logger = logger;
         }
 
-        // GET: ReTweets
+        /// <summary>
+        /// Returns a view of all ReTweets.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             var twitterCloneContext = _context.ReTweets.Include(r => r.OriginalTweet).Include(r => r.Retweeter);
             return View(await twitterCloneContext.ToListAsync());
         }
 
-        // GET: ReTweets/Details/5
+        /// <summary>
+        /// Returns a view of the details of the ReTweet with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the ReTweet to view details of.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.ReTweets == null)
             {
                 return NotFound();
@@ -41,14 +61,6 @@ namespace worsham.twitter.clone.Controllers
             }
 
             return View(reTweets);
-        }
-
-        // GET: ReTweets/Create
-        public IActionResult Create()
-        {
-            ViewData["OriginalTweetId"] = new SelectList(_context.Tweets, "Id", "Content");
-            ViewData["RetweeterId"] = new SelectList(_context.Users, "Id", "Email");
-            return View();
         }
 
         /// <summary>
@@ -122,9 +134,20 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
-        // GET: ReTweets/Edit/5
+        /// <summary>
+        /// Returns a view of the ReTweet with the specified id for editing.
+        /// </summary>
+        /// <param name="id">The id of the ReTweet to edit.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.ReTweets == null)
             {
                 return NotFound();
@@ -140,12 +163,22 @@ namespace worsham.twitter.clone.Controllers
             return View(reTweets);
         }
 
-        // POST: ReTweets/Edit/5 To protect from overposting attacks, enable the specific properties
-        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Edits a ReTweet with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the ReTweet to edit.</param>
+        /// <param name="reTweets">The ReTweet object with the updated values.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,OriginalTweetId,ReTweetCreationDateTime,RetweeterId")] ReTweets reTweets)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id != reTweets.Id)
             {
                 return NotFound();
@@ -176,9 +209,20 @@ namespace worsham.twitter.clone.Controllers
             return View(reTweets);
         }
 
-        // GET: ReTweets/Delete/5
+        /// <summary>
+        /// Returns a view of the ReTweet with the specified id for deletion.
+        /// </summary>
+        /// <param name="id">The id of the ReTweet to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.ReTweets == null)
             {
                 return NotFound();
@@ -196,11 +240,21 @@ namespace worsham.twitter.clone.Controllers
             return View(reTweets);
         }
 
-        // POST: ReTweets/Delete/5
+        /// <summary>
+        /// Deletes a ReTweet with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the ReTweet to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (_context.ReTweets == null)
             {
                 return Problem("Entity set 'TwitterCloneContext.ReTweets'  is null.");

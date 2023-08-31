@@ -3,18 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : TwitterController
     {
-        private readonly TwitterCloneContext _context;
-        private readonly ILogger<HomeController> _logger;
+        private readonly TwitterCloneContext _context; 
 
-        public HomeController(TwitterCloneContext context, ILogger<HomeController> logger)
+        public HomeController(TwitterCloneContext context, ILogger<HomeController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
-            _logger = logger;
         }
 
         /// <summary>
@@ -50,6 +49,12 @@ namespace worsham.twitter.clone.Controllers
 
         public IActionResult Privacy()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             return View();
         }
 

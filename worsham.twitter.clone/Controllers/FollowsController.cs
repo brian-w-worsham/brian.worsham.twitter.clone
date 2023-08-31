@@ -3,37 +3,56 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models.EntityModels;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class FollowsController : Controller
+    public class FollowsController : TwitterController
     {
         private readonly TwitterCloneContext _context;
-        private readonly ILogger<LikesController> _logger;
         private int? _currentUserId;
 
-        public FollowsController(TwitterCloneContext context, ILogger<LikesController> logger)
+        public FollowsController(TwitterCloneContext context, ILogger<FollowsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
-            _logger = logger;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             _currentUserId = HttpContext.Session.GetInt32("UserId");
-            base.OnActionExecuting(context);
+            base.OnActionExecuting(context);        
         }
 
-        // GET: Follows
+        /// <summary>
+        /// Returns a view of all Follows.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
             var twitterCloneContext = _context.Follows.Include(f => f.FollowedUser).Include(f => f.FollowerUser);
             return View(await twitterCloneContext.ToListAsync());
         }
 
-        // GET: Follows/Details/5
+        /// <summary>
+        /// Returns a view of the details of the Follow with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the Follow to view details of.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Follows == null)
             {
                 return NotFound();
@@ -51,9 +70,18 @@ namespace worsham.twitter.clone.Controllers
             return View(follows);
         }
 
-        // GET: Follows/Create
+        /// <summary>
+        /// Returns a view for creating a new Follow.
+        /// </summary>
+        /// <returns>An IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public IActionResult Create()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
             ViewData["FollowedUserId"] = new SelectList(_context.Users, "Id", "Email");
             ViewData["FollowerUserId"] = new SelectList(_context.Users, "Id", "Email");
             return View();
@@ -87,20 +115,31 @@ namespace worsham.twitter.clone.Controllers
                     return RedirectToAction("Index", "Tweets");
                 }
                 _logger.LogError("ModelState is invalid");
-                //Todo: return a notifcation to the user that the follow was not created
+                TempData["errorNotification"] = "An error occurred while attempting to follow.";
                 return RedirectToAction("Index", "Tweets");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating follow");
-                //Todo: return a notifcation to the user that the follow was not created
+                TempData["errorNotification"] = "An error occurred while attempting to follow.";
                 return RedirectToAction("Index", "Tweets");
             }
         }
 
-        // GET: Follows/Edit/5
+        /// <summary>
+        /// Returns a view of the Follow with the specified id for editing.
+        /// </summary>
+        /// <param name="id">The id of the Follow to edit.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Follows == null)
             {
                 return NotFound();
@@ -116,12 +155,22 @@ namespace worsham.twitter.clone.Controllers
             return View(follows);
         }
 
-        // POST: Follows/Edit/5 To protect from overposting attacks, enable the specific properties
-        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Edits a Follow with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the Follow to edit.</param>
+        /// <param name="follows">The Follow object with the updated values.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FollowedUserId,FollowerUserId")] Follows follows)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id != follows.Id)
             {
                 return NotFound();
@@ -152,9 +201,19 @@ namespace worsham.twitter.clone.Controllers
             return View(follows);
         }
 
-        // GET: Follows/Delete/5
+        /// <summary>
+        /// Returns a view of the Follow with the specified id for deletion.
+        /// </summary>
+        /// <param name="id">The id of the Follow to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         public async Task<IActionResult> Delete(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Follows == null)
             {
                 return NotFound();

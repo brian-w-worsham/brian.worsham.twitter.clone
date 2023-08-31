@@ -1,22 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class TweetsController : Controller
+    public class TweetsController : TwitterController
     {
         private readonly TwitterCloneContext _context;
-        private readonly ILogger<LikesController> _logger;
         private int? _currentUserId;
 
-        public TweetsController(TwitterCloneContext context, ILogger<LikesController> logger)
+        public TweetsController(TwitterCloneContext context, ILogger<TweetsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
-            _logger = logger;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -125,9 +125,31 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
-        // GET: Tweets/Details/5
+        /// <summary>
+        /// Displays details of a tweet with the specified ID, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the tweet to display details for.</param>
+        /// <returns>
+        /// If the user is authorized as an admin, displays the details of the tweet with the specified ID.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </returns>
+        /// <remarks>
+        /// This method displays the details of a tweet with the specified ID, provided that the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks if the tweet with the specified ID exists in the database.
+        /// If the tweet exists, its details are retrieved from the database and displayed using the <see cref="View"/> method.
+        /// If the tweet does not exist, a "Not Found" view is displayed using the <see cref="NotFound"/> method.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Tweets == null)
             {
                 return NotFound();
@@ -193,9 +215,32 @@ namespace worsham.twitter.clone.Controllers
             }
         }
 
-        // GET: Tweets/Edit/5
+        /// <summary>
+        /// Displays a form for editing a tweet with the specified ID, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the tweet to edit.</param>
+        /// <returns>
+        /// If the user is authorized as an admin, displays a form for editing the tweet with the specified ID.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </returns>
+        /// <remarks>
+        /// This method displays a form for editing a tweet with the specified ID, provided that the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks if the tweet with the specified ID exists in the database.
+        /// If the tweet exists, its details are retrieved from the database and the edit form is displayed using the <see cref="View"/> method.
+        /// The form includes a <see cref="ViewData"/> element for selecting the tweeter of the tweet from a list of users.
+        /// If the tweet does not exist, a "Not Found" view is displayed using the <see cref="NotFound"/> method.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Tweets == null)
             {
                 return NotFound();
@@ -210,12 +255,40 @@ namespace worsham.twitter.clone.Controllers
             return View(tweets);
         }
 
-        // POST: Tweets/Edit/5 To protect from overposting attacks, enable the specific properties
-        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Handles the submission of the edited tweet information and updates the database, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the tweet being edited.</param>
+        /// <param name="tweets">The edited tweet information to be saved.</param>
+        /// <returns>
+        /// If the user is authorized as an admin and the ModelState is valid, updates the tweet information in the database and redirects to the <see cref="Index"/> action.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the ModelState is invalid, logs validation errors and redirects to the <see cref="Index"/> action of the "Tweets" controller.
+        /// If the tweet with the specified ID does not exist, returns a "Not Found" view using the <see cref="NotFound"/> method.
+        /// </returns>
+        /// <remarks>
+        /// This method handles the submission of edited tweet information, provided that the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method compares the ID parameter with the ID property of the provided <paramref name="tweets"/> object.
+        /// If they do not match, a "Not Found" view is displayed using the <see cref="NotFound"/> method.
+        /// If the IDs match and the ModelState is valid, the tweet information is updated in the database using the <see cref="_context"/> object's <see cref="DbContext.Update"/> method.
+        /// The updated information is saved using the <see cref="DbContext.SaveChangesAsync"/> method.
+        /// If a <see cref="DbUpdateConcurrencyException"/> occurs, the method checks if the tweet still exists in the database.
+        /// If the tweet does not exist, a "Not Found" view is displayed.
+        /// If the tweet exists, the exception is re-thrown.
+        /// If the ModelState is invalid, validation errors are logged using the <see cref="_logger"/> object, and the user is redirected to the <see cref="Index"/> action of the "Tweets" controller.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Content,CreationDateTime,TweeterId")] Tweets tweets)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id != tweets.Id)
             {
                 return NotFound();
@@ -245,17 +318,41 @@ namespace worsham.twitter.clone.Controllers
             return View(tweets);
         }
 
-        // GET: Tweets/Delete/5
+        /// <summary>
+        /// Displays the details of a tweet for potential deletion, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the tweet to be deleted.</param>
+        /// <returns>
+        /// If the user is authorized as an admin, displays the details of the tweet for potential deletion.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the provided <paramref name="id"/> is null or the <see cref="TwitterCloneContext.Tweets"/> is null, returns a "Not Found" view using the <see cref="NotFound"/> method.
+        /// If the tweet with the specified ID does not exist, returns a "Not Found" view using the <see cref="NotFound"/> method.
+        /// </returns>
+        /// <remarks>
+        /// This method displays the details of a tweet for potential deletion, provided that the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks whether the provided <paramref name="id"/> is null or the <see cref="TwitterCloneContext.Tweets"/> is null.
+        /// If either condition is met, a "Not Found" view is displayed using the <see cref="NotFound"/> method.
+        /// Otherwise, the method retrieves the tweet details using the <see cref="TwitterCloneContext.Tweets"/> object's <see cref="DbContext.FindAsync"/> method
+        /// and includes the tweeter information using the <see cref="Include"/> method. The retrieved tweet is displayed using the <see cref="View"/> method.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Tweets == null)
             {
                 return NotFound();
             }
 
-            var tweets = await _context.Tweets
-                .Include(t => t.Tweeter)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var tweets = await _context.Tweets.Include(t => t.Tweeter).FirstOrDefaultAsync(m => m.Id == id);
+            
             if (tweets == null)
             {
                 return NotFound();
@@ -264,11 +361,36 @@ namespace worsham.twitter.clone.Controllers
             return View(tweets);
         }
 
-        // POST: Tweets/Delete/5
+        /// <summary>
+        /// Deletes a tweet confirmed by the user, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the tweet to be deleted.</param>
+        /// <returns>
+        /// If the user is authorized as an admin, deletes the specified tweet and redirects to the "Index" action of the "Tweets" controller.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the <see cref="TwitterCloneContext.Tweets"/> is null, returns a "Problem" response with a specific error message.
+        /// If the tweet with the specified ID does not exist, no action is taken.
+        /// </returns>
+        /// <remarks>
+        /// This method deletes the tweet with the specified ID if the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks whether the <see cref="TwitterCloneContext.Tweets"/> is null.
+        /// If it is null, a "Problem" response is returned with a specific error message.
+        /// Otherwise, the method retrieves the tweet using the provided <paramref name="id"/> and the <see cref="TwitterCloneContext.Tweets"/> object's <see cref="DbContext.FindAsync"/> method.
+        /// If the tweet is found, it is removed from the context using the <see cref="DbContext.Remove"/> method and the changes are saved using <see cref="DbContext.SaveChangesAsync"/>.
+        /// Finally, the method redirects to the "Index" action of the "Tweets" controller.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (_context.Tweets == null)
             {
                 return Problem("Entity set 'TwitterCloneContext.Tweets'  is null.");

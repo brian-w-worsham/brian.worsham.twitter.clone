@@ -2,30 +2,50 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models.EntityModels;
+using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class LikesController : Controller
+    public class LikesController : TwitterController
     {
         private readonly TwitterCloneContext _context;
-        private readonly ILogger<LikesController> _logger;
 
-        public LikesController(TwitterCloneContext context, ILogger<LikesController> logger)
+        public LikesController(TwitterCloneContext context, ILogger<LikesController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
-            _logger = logger;
         }
 
-        // GET: Likes
+        /// <summary>
+        /// Returns a view of all Likes.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             var twitterCloneContext = _context.Likes.Include(l => l.UserThatLikedTweet).Include(l => l.LikedTweet);
             return View(await twitterCloneContext.ToListAsync());
         }
 
-        // GET: Likes/Details/5
+        /// <summary>
+        /// Returns a view of the details of the Like with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the Like to view details of.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Likes == null)
             {
                 return NotFound();
@@ -41,14 +61,6 @@ namespace worsham.twitter.clone.Controllers
             }
 
             return View(likes);
-        }
-
-        // GET: Likes/Create
-        public IActionResult Create()
-        {
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Email");
-            ViewData["LikedTweetId"] = new SelectList(_context.Tweets, "Id", "Content");
-            return View();
         }
 
         /// <summary>
@@ -126,9 +138,20 @@ namespace worsham.twitter.clone.Controllers
             return HttpContext.Session.GetInt32("UserId");
         }
 
-        // GET: Likes/Edit/5
+        /// <summary>
+        /// Returns a view of the Like with the specified id for editing.
+        /// </summary>
+        /// <param name="id">The id of the Like to edit.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Likes == null)
             {
                 return NotFound();
@@ -144,12 +167,22 @@ namespace worsham.twitter.clone.Controllers
             return View(likes);
         }
 
-        // POST: Likes/Edit/5 To protect from overposting attacks, enable the specific properties
-        // you want to bind to. For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Edits a Like with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the Like to edit.</param>
+        /// <param name="likes">The Like object with the updated values.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,LikedTweetId,UserThatLikedTweetId")] Likes likes)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id != likes.Id)
             {
                 return NotFound();
@@ -180,34 +213,24 @@ namespace worsham.twitter.clone.Controllers
             return View(likes);
         }
 
-        // GET: Likes/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Likes == null)
-            {
-                return NotFound();
-            }
-
-            var likes = await _context.Likes
-                .Include(l => l.UserThatLikedTweet)
-                .Include(l => l.LikedTweet)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (likes == null)
-            {
-                return NotFound();
-            }
-
-            return View(likes);
-        }
-
-        // POST: Likes/Delete/5
+        /// <summary>
+        /// Deletes a Like with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the Like to delete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an IActionResult that represents the result of the operation.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (_context.Likes == null)
             {
-                return Problem("Entity set 'TwitterCloneContext.Likes'  is null.");
+                return Problem("Entity set 'TwitterCloneContext.Likes' is null.");
             }
             var likes = await _context.Likes.FindAsync(id);
             if (likes != null)

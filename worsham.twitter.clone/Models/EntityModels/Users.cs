@@ -42,6 +42,10 @@ namespace worsham.twitter.clone.Models.EntityModels
         [StringLength(300)]
         [Unicode(false)]
         public string ProfilePictureUrl { get; set; }
+        [Required]
+        [StringLength(50)]
+        [Unicode(false)]
+        public string UserRole { get; set; }
 
 
         [InverseProperty("UserThatLikedTweet")]

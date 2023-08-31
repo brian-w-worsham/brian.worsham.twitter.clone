@@ -35,6 +35,8 @@ namespace worsham.twitter.clone
             });
 
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+
 
             builder.Services.AddControllersWithViews();
 

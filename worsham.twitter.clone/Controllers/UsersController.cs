@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Authentication;
@@ -8,21 +9,19 @@ using worsham.twitter.clone.Services;
 
 namespace worsham.twitter.clone.Controllers
 {
-    public class UsersController : Controller
+    public class UsersController : TwitterController
     {
         private readonly TwitterCloneContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthenticationService _authenticationService;
-        private readonly ILogger<UsersController> _logger;
         private int? _currentUserId;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public UsersController(TwitterCloneContext context, IHttpContextAccessor httpContextAccessor, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
+        public UsersController(TwitterCloneContext context, IHttpContextAccessor httpContextAccessor, IAuthenticationService authenticationService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authenticationService;
-            _logger = logger;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -32,15 +31,62 @@ namespace worsham.twitter.clone.Controllers
             base.OnActionExecuting(context);
         }
 
-        // GET: Users
+        /// <summary>
+        /// Displays a list of users, if authorized as an admin.
+        /// </summary>
+        /// <returns>
+        /// If the user is authorized as an admin, returns a view displaying the list of users from the <see cref="TwitterCloneContext.Users"/>.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the <see cref="TwitterCloneContext.Users"/> is null, returns a "Problem" response with a specific error message.
+        /// </returns>
+        /// <remarks>
+        /// This method displays the list of users if the user is authorized as an admin.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks whether the <see cref="TwitterCloneContext.Users"/> is null.
+        /// If it is null, a "Problem" response is returned with a specific error message.
+        /// Otherwise, the method retrieves the list of users from the <see cref="TwitterCloneContext.Users"/> using the <see cref="DbContext.ToListAsync"/> method.
+        /// The list of users is then passed to the view and returned as a result.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             return _context.Users != null ? View(await _context.Users.ToListAsync()) : Problem("Entity set 'TwitterCloneContext.Users'  is null.");
         }
 
-        // GET: Users/Details/5
+        /// <summary>
+        /// Displays details of a user, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the user to display details for.</param>
+        /// <returns>
+        /// If the user is authorized as an admin and a valid user ID is provided, returns a view displaying the details of the user from the <see cref="TwitterCloneContext.Users"/>.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the provided user ID is null or the <see cref="TwitterCloneContext.Users"/> is null, returns a "NotFound" response.
+        /// </returns>
+        /// <remarks>
+        /// This method displays the details of a user if the user is authorized as an admin and a valid user ID is provided.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks whether the provided user ID is null or the <see cref="TwitterCloneContext.Users"/> is null.
+        /// If either of these conditions is true, a "NotFound" response is returned.
+        /// Otherwise, the method retrieves the user details from the <see cref="TwitterCloneContext.Users"/> using the provided user ID.
+        /// If the user is found, their details are passed to the view and returned as a result.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Users == null)
             {
                 return NotFound();
@@ -73,7 +119,7 @@ namespace worsham.twitter.clone.Controllers
                 // the Home/Index view.
                 if (_currentUserId == null)
                 {
-                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    base._logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -90,7 +136,7 @@ namespace worsham.twitter.clone.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving user profile data");
+                base._logger.LogError(ex, "Error retrieving user profile data");
                 return RedirectToAction("Error", "Home");
             }
         }
@@ -121,7 +167,7 @@ namespace worsham.twitter.clone.Controllers
                         ViewData["FollowId"] = _context.Follows?.FirstOrDefault(f => f.FollowerUserId == _currentUserId && f.FollowedUserId == followedUserId)?.Id;
                     }
 
-                    _logger.LogInformation("User is viewing another user's profile. Current user ID: {CurrentUserId}, Viewed user ID: {ViewedUserId}", _currentUserId, followedUserId);
+                    base._logger.LogInformation("User is viewing another user's profile. Current user ID: {CurrentUserId}, Viewed user ID: {ViewedUserId}", _currentUserId, followedUserId);
 
                     return followedUserId;
                 }
@@ -129,14 +175,14 @@ namespace worsham.twitter.clone.Controllers
                 {
                     ViewData["UserIsViewingOwnProfile"] = true;
 
-                    _logger.LogInformation("User is viewing their own profile. User ID: {UserId}", _currentUserId);
+                    base._logger.LogInformation("User is viewing their own profile. User ID: {UserId}", _currentUserId);
 
                     return _currentUserId;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while determining the user's profile view.");
+                base._logger.LogError(ex, "An error occurred while determining the user's profile view.");
                 // Handle the exception if needed
                 return null;
             }
@@ -155,7 +201,7 @@ namespace worsham.twitter.clone.Controllers
 
                 if (currentUser == null)
                 {
-                    _logger.LogError("User profile not found for user with ID: {UserId}", userId);
+                    base._logger.LogError("User profile not found for user with ID: {UserId}", userId);
                     TempData["errorNotification"] = "An error occurred. The requested user profile was not found.";
                     throw new Exception("User not found.");
                 }
@@ -175,7 +221,7 @@ namespace worsham.twitter.clone.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while retrieving user profile for user with ID: {UserId}", userId);
+                base._logger.LogError(ex, "An error occurred while retrieving user profile for user with ID: {UserId}", userId);
                 throw; // Re-throw the exception for proper handling at a higher level
             }
         }
@@ -242,22 +288,16 @@ namespace worsham.twitter.clone.Controllers
 
                         profilePictureUrls.Add(tweet.Id, profilePictureUrl);
 
-                        _logger.LogInformation("Profile picture URL retrieved for tweet ID {TweetId}: {ProfilePictureUrl}", tweet.Id, profilePictureUrl);
+                        base._logger.LogInformation("Profile picture URL retrieved for tweet ID {TweetId}: {ProfilePictureUrl}", tweet.Id, profilePictureUrl);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while retrieving profile picture URLs for tweets.");
+                base._logger.LogError(ex, "An error occurred while retrieving profile picture URLs for tweets.");
             }
 
             return profilePictureUrls;
-        }
-
-        // GET: Users/Create
-        public IActionResult Create()
-        {
-            return View();
         }
 
         /// <summary>
@@ -298,7 +338,7 @@ namespace worsham.twitter.clone.Controllers
 
                     await _authenticationService.RegisterUser(user, user.Password);
 
-                    _logger.LogInformation("User registered successfully: {Username}", user.UserName);
+                    base._logger.LogInformation("User registered successfully: {Username}", user.UserName);
 
                     return Json(new { success = true });
                 }
@@ -306,12 +346,12 @@ namespace worsham.twitter.clone.Controllers
                 {
                     if (IsUniqueConstraintViolation(ex))
                     {
-                        _logger.LogWarning("Attempt to register with a non-unique username: {Username}", user.UserName);
+                        base._logger.LogWarning("Attempt to register with a non-unique username: {Username}", user.UserName);
                         return Json(new { success = false, errorMessage = "This username is already taken." });
                     }
                     else
                     {
-                        _logger.LogError(ex, "An error occurred while registering a user.");
+                        base._logger.LogError(ex, "An error occurred while registering a user.");
                         return Json(new { success = false, errorMessage = "An error occurred while registering. Please try again later." });
                     }
                 }
@@ -319,17 +359,51 @@ namespace worsham.twitter.clone.Controllers
             return Json(new { success = false, errorMessage = "Invalid input data." });
         }
 
+        /// <summary>
+        /// Checks whether the provided <see cref="DbUpdateException"/> indicates a unique constraint violation.
+        /// </summary>
+        /// <param name="ex">The <see cref="DbUpdateException"/> to check.</param>
+        /// <returns>
+        /// Returns true if the exception message or inner exception message indicates a unique constraint violation for the "IX_Users_UserName" index; otherwise, returns false.
+        /// </returns>
+        /// <remarks>
+        /// This method checks the provided <see cref="DbUpdateException"/> and its inner exception, if present, for messages indicating a unique constraint violation.
+        /// It returns true if either the exception message or the inner exception message contains the unique constraint index name "IX_Users_UserName"; otherwise, it returns false.
+        /// This is useful for identifying cases where a duplicate user name has been attempted to be inserted into the database, violating the unique constraint.
+        /// </remarks>
         private bool IsUniqueConstraintViolation(DbUpdateException ex)
         {
-            // Check if the exception message or inner exception message indicates a unique
-            // constraint violation
-            return ex.InnerException?.Message.Contains("IX_Users_UserName") == true ||
-                   ex.Message.Contains("IX_Users_UserName");
+            return ex.InnerException?.Message.Contains("IX_Users_UserName") == true || ex.Message.Contains("IX_Users_UserName");
         }
 
-        // GET: Users/Edit/5
+        /// <summary>
+        /// Displays a form for editing user details, if authorized as an admin.
+        /// </summary>
+        /// <param name="id">The ID of the user to edit.</param>
+        /// <returns>
+        /// If the user is authorized as an admin and a valid user ID is provided, returns a view displaying a form for editing user details from the <see cref="TwitterCloneContext.Users"/>.
+        /// If the user is not authorized as an admin, redirects the user to the appropriate page using the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the provided user ID is null or the <see cref="TwitterCloneContext.Users"/> is null, returns a "NotFound" response.
+        /// If the user is found in the <see cref="TwitterCloneContext.Users"/>, their details are passed to the view and returned as a result.
+        /// </returns>
+        /// <remarks>
+        /// This method displays a form for editing user details if the user is authorized as an admin and a valid user ID is provided.
+        /// It first checks whether the user is authorized as an admin by calling the <see cref="RedirectIfNotAdmin"/> method.
+        /// If the user is authorized, the method checks whether the provided user ID is null or the <see cref="TwitterCloneContext.Users"/> is null.
+        /// If either of these conditions is true, a "NotFound" response is returned.
+        /// Otherwise, the method retrieves the user details from the <see cref="TwitterCloneContext.Users"/> using the provided user ID.
+        /// If the user is found, their details are passed to the view for editing and returned as a result.
+        /// If the user is not authorized, they are redirected to the appropriate page based on their login status using the <see cref="RedirectIfNotAdmin"/> method.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Users == null)
             {
                 return NotFound();
@@ -379,7 +453,7 @@ namespace worsham.twitter.clone.Controllers
                             await userProfile.FormFile.CopyToAsync(fileStream);
                         }
 
-                        _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+                        base._logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
                     }
 
                     _context.Update(entity: new Users()
@@ -397,7 +471,7 @@ namespace worsham.twitter.clone.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    _logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
+                    base._logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
 
                     if (!UsersExists(id: UserId))
                     {
@@ -410,7 +484,7 @@ namespace worsham.twitter.clone.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
+                    base._logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
                 }
 
                 if (!didProfilePictureUploadSucceed)
@@ -423,23 +497,45 @@ namespace worsham.twitter.clone.Controllers
                     ViewData["didProfilePictureUploadSucceed"] = true;
                 }
 
-                _logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
+                base._logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
 
                 return RedirectToAction(actionName: "Profile", controllerName: "Users");
             }
             return View(model: userProfile);
         }
 
-        // GET: Users/Delete/5
+        /// <summary>
+        /// Handles the HTTP GET request for deleting a user with the specified ID.
+        /// </summary>
+        /// <param name="id">The ID of the user to delete.</param>
+        /// <returns>
+        /// If the user is authorized to perform the action, returns the view displaying the user details for confirmation.
+        /// If the user is not authorized, redirects to the appropriate action based on authorization status.
+        /// If the ID is null or no user with the provided ID is found in the database, returns a "Not Found" response.
+        /// </returns>
+        /// <remarks>
+        /// This method handles the HTTP GET request for deleting a user with the specified ID.
+        /// It first checks if the user is authorized to perform the deletion. If the user is not authorized,
+        /// it redirects them to the appropriate action based on their authorization status.
+        /// If the user is authorized, the method attempts to retrieve the user details from the database using the provided ID.
+        /// If the ID is null or no user is found with the provided ID, a "Not Found" response is returned.
+        /// Otherwise, the method returns a view displaying the user details for confirmation of deletion.
+        /// </remarks>
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (id == null || _context.Users == null)
             {
                 return NotFound();
             }
 
-            var users = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var users = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
             if (users == null)
             {
                 return NotFound();
@@ -448,11 +544,33 @@ namespace worsham.twitter.clone.Controllers
             return View(users);
         }
 
-        // POST: Users/Delete/5
+        /// <summary>
+        /// Handles the HTTP POST request for confirming the deletion of a user.
+        /// </summary>
+        /// <param name="id">The ID of the user to be deleted.</param>
+        /// <returns>
+        /// If the user is authorized to perform the action, deletes the user from the database and redirects to the "Index" action.
+        /// If the user is not authorized, redirects to the appropriate action based on authorization status.
+        /// If the Users entity set is null, returns a "Problem" response indicating the issue.
+        /// </returns>
+        /// <remarks>
+        /// This method handles the HTTP POST request for confirming the deletion of a user with the specified ID.
+        /// It first checks if the user is authorized to perform the deletion. If the user is not authorized,
+        /// it redirects them to the appropriate action based on their authorization status.
+        /// If the user is authorized, the method attempts to delete the user with the provided ID from the database.
+        /// If the Users entity set is null, a "Problem" response indicating the issue is returned.
+        /// After successful deletion, the method redirects to the "Index" action of the controller.
+        /// </remarks>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var isAuthorized = RedirectIfNotAdmin();
+            if (isAuthorized != null)
+            {
+                return isAuthorized;
+            }
+
             if (_context.Users == null)
             {
                 return Problem("Entity set 'TwitterCloneContext.Users'  is null.");
@@ -488,26 +606,27 @@ namespace worsham.twitter.clone.Controllers
                 // Authentication successful - Set up the session here
                 HttpContext.Session.SetInt32("UserId", user.Id);
                 HttpContext.Session.SetString("UserName", user.UserName);
+                HttpContext.Session.SetString("UserRole", user.UserRole);
 
-                _logger.LogInformation("Successful login for user: {UserName}", user.UserName);
+                base._logger.LogInformation("Successful login for user: {UserName}", user.UserName);
                 return Json(new LoginResult { Success = true });
             }
             catch (ArgumentException ex) // Replace AuthenticationException with the actual exception type
             {
                 // Log the authentication exception
-                _logger.LogError(ex, ex.Message);
+                base._logger.LogError(ex, ex.Message);
                 return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
             }
             catch (AuthenticationException ex) // Replace AuthenticationException with the actual exception type
             {
                 // Log the authentication exception
-                _logger.LogError(ex, ex.Message);
+                base._logger.LogError(ex, ex.Message);
                 return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
             }
             catch (Exception ex)
             {
                 // Log other exceptions
-                _logger.LogError(ex, ex.Message);
+                base._logger.LogError(ex, ex.Message);
                 return Json(new LoginResult { Success = false, ErrorMessage = "An error occurred during login. Please try again later." });
             }
         }
@@ -531,14 +650,14 @@ namespace worsham.twitter.clone.Controllers
                 _authenticationService.LogoutUser(_httpContextAccessor.HttpContext);
 
                 // Log successful logout
-                _logger.LogInformation("User logged out successfully.");
+                base._logger.LogInformation("User logged out successfully.");
 
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
                 // Log any errors that occur during logout
-                _logger.LogError(ex, "An error occurred during logout.");
+                base._logger.LogError(ex, "An error occurred during logout.");
 
                 // Handle the error appropriately, e.g., show an error page
                 return RedirectToAction("Error", "Home");
