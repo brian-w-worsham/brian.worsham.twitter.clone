@@ -323,7 +323,7 @@ namespace worsham.twitter.clone.Controllers
         /// </remarks>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio")] Users user)
+        public async Task<IActionResult> Create([Bind("Id,UserName,Email,Password,Bio,UserRole")] Users user)
         {
             if (ModelState.IsValid)
             {
