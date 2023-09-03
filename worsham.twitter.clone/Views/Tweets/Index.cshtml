@@ -54,7 +54,7 @@
             <input type="submit" value="Post" class="btn btn-primary me-3 my-2 rounded-pill fw-bold post" />
         </div>
     </form>
-    
+
     @{
         int index = 0;
     }
@@ -72,7 +72,11 @@
                                 <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
                             </a>
                         </div>
-                        <p class="card-text">@tweet.Content</p>
+                        <p class="card-text">
+                            <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
+                                <span class="card-text">@tweet.Content</span>
+                            </a>
+                        </p>
                         @{
                             CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
                 { TweetId = tweet.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = tweet.TweeterUserName, TimeAgo = @TimeAgo(tweet.TimeSincePosted), TweetContent = tweet.Content };
