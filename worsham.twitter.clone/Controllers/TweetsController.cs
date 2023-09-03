@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.Models;
 using worsham.twitter.clone.Models.EntityModels;
 using worsham.twitter.clone.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace worsham.twitter.clone.Controllers
 {
@@ -352,7 +353,7 @@ namespace worsham.twitter.clone.Controllers
             }
 
             var tweets = await _context.Tweets.Include(t => t.Tweeter).FirstOrDefaultAsync(m => m.Id == id);
-            
+
             if (tweets == null)
             {
                 return NotFound();
@@ -403,6 +404,48 @@ namespace worsham.twitter.clone.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Retrieves a specific tweet and its related comments and displays them in a view.
+        /// </summary>
+        /// <param name="tweetId">The unique identifier of the tweet to retrieve.</param>
+        /// <returns>An asynchronous task that represents the action result.</returns>
+        [HttpGet]
+        public async Task<IActionResult> TweetAndRelatedComments(int? tweetId)
+        {
+            try
+            {
+                if (_currentUserId == null)
+                {
+                    base._logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    return RedirectToAction("Index", "Home");
+                }
+
+                var tweetOwnerId = _context?.Tweets?.Find(tweetId)?.TweeterId;
+                TweetAndRelatedCommentsViewModel model = new TweetAndRelatedCommentsViewModel()
+                {
+                    Tweet = _context?.Tweets.Find(tweetId),
+                    Comments = _context?.Comments.Where(c => c.OriginalTweetId == tweetId).ToList(),
+                    TweetOwnerName = _context?.Users?.Find(tweetOwnerId)?.UserName,
+                    TweetOwnersProfilePicture = _context?.Users?.Find(tweetOwnerId)?.ProfilePictureUrl
+                };
+
+                foreach (var comment in model.Comments)
+                {
+                    _logger.LogInformation("Processing comment with ID {comment.Id}.", comment.Id);
+                    // store the commenter's ProfilePictureUrl in the ViewData dictionary
+                    ViewData[comment.Id.ToString()] = (await _context.Users.FirstOrDefaultAsync(u => u.Id == comment.CommenterId))?.ProfilePictureUrl ?? "\\default\\1.jpg";
+                }
+
+                ViewData["errorNotification"] = (string.IsNullOrEmpty(TempData["errorNotification"]?.ToString())) ? "" : TempData["errorNotification"]?.ToString();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                base._logger.LogError(ex, "Error retrieving the tweet or it's related comments");
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         private bool TweetsExists(int id)

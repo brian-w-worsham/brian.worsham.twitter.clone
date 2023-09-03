@@ -130,6 +130,12 @@ input.post {
     fill: lightblue;
 }
 
+.authenticated .card-text, .authenticated .card-title a, .authenticated a.go-back {
+    color: inherit;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+}
+
 #profile img.profile-backdrop {
     height: 12rem;
     background-color: #d0d9de;
