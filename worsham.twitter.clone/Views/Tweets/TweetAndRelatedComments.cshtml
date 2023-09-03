@@ -38,13 +38,6 @@
                     <p class="card-text">
                         <span class="card-text">@Model?.Tweet?.Content</span>
                     </p>
-                    @*  @{
-                        CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
-            { TweetId = tweet.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = tweet.TweeterUserName, TimeAgo = @TimeAgo(tweet.TimeSincePosted), TweetContent = tweet.Content };
-                        TweetActionsRowModel tweetActionsRowModel = new() { Tweet = tweet, Index = index };
-                    }
-                    <partial name="_CreateCommentModal" model="@createCommentModalModel" />
-                    <partial name="_tweetActionsRow" model="@tweetActionsRowModel" />  *@
                 </div>
             </div>
         </div>
@@ -71,13 +64,6 @@
                                 <span class="card-text">@comment.Content</span>
                             </a>
                         </p>
-                        @* @{
-                            CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
-                { TweetId = comment.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = comment.TweeterUserName, TimeAgo = @TimeAgo(comment.TimeSincePosted), TweetContent = comment.Content };
-                            TweetActionsRowModel tweetActionsRowModel = new() { Tweet = comment, Index = index };
-                        }
-                        <partial name="_CreateCommentModal" model="@createCommentModalModel" />
-                        <partial name="_tweetActionsRow" model="@tweetActionsRowModel" /> *@
                     </div>
                 </div>
             </div>
