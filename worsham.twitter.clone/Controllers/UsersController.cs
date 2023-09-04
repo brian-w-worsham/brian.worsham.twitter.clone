@@ -463,8 +463,10 @@ namespace worsham.twitter.clone.Controllers
                         Bio = userProfile.Bio,
                         ProfilePictureUrl = fileName ?? _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.ProfilePictureUrl).FirstOrDefault(),
                         Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
-                        Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault()
+                        Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault(),
+                        UserRole = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.UserRole).FirstOrDefault(),
                     });
+                    _logger.LogInformation("User profile updated for user with ID: {UserId}", userProfile.UserId);
                     await _context.SaveChangesAsync();
                     // Mark profile picture upload as successful
                     didProfilePictureUploadSucceed = true;
