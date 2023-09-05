@@ -112,18 +112,24 @@ namespace worsham.twitter.clone.Controllers
         }
 
         /// <summary>
-        /// Retrieves a list of retweets made by users followed by the current user asynchronously.
+        /// Asynchronously retrieves a list of retweets, including the original tweet, comments, likes, and retweets, for the current user and followed users.
         /// </summary>
-        /// <param name="followedUserIds">An IQueryable of integers representing the followed user IDs.</param>
+        /// <param name="followedUserIds">A queryable collection of user IDs representing the users the current user is following.</param>
         /// <returns>
-        /// An asynchronous task that returns a list of retweets made by the followed users, including related entities.
+        /// A task representing the asynchronous operation. The task result is a list of <see cref="ReTweets"/> objects containing the retweets and associated data.
         /// </returns>
+        /// <remarks>
+        /// This method fetches retweets from the database for the current user and the users they are following. It includes related data such as the original tweet,
+        /// comments, likes, and retweets on the original tweet. The result is ordered by the creation date and time of the retweets in descending order.
+        /// </remarks>
         private async Task<List<ReTweets>> GetReTweetsAsync(IQueryable<int> followedUserIds)
         {
             return await _context.ReTweets
-                .Where(rt => followedUserIds.Contains(rt.RetweeterId))
+                .Where(rt => rt.RetweeterId == _currentUserId || followedUserIds.Contains(rt.RetweeterId))
                 .Include(rt => rt.OriginalTweet)
-                .Include(rt => rt.Retweeter)
+                .Include(rt => rt.OriginalTweet.Comments)
+                .Include(rt => rt.OriginalTweet.Likes)
+                .Include(rt => rt.OriginalTweet.ReTweets)
                 .OrderByDescending(rt => rt.ReTweetCreationDateTime)
                 .ToListAsync();
         }
@@ -159,6 +165,7 @@ namespace worsham.twitter.clone.Controllers
 
                 return minCreationTime2.CompareTo(minCreationTime1);
             });
+            combinedAndSortedTweets = combinedAndSortedTweets.Distinct().ToList();
 
             return combinedAndSortedTweets;
         }
