@@ -51,8 +51,9 @@ function createFollowForm(user, token) {
  */
 function updateUiWithListOfSuggestedUsers(users, token) {
     const suggestedUsersCard = document.getElementById("suggestedUsersCard");
+    const suggestedUsers = document.getElementById("suggestedUsers");
     // Clear existing content in the suggested users card
-    suggestedUsersCard.innerHTML = "";
+    suggestedUsers.innerHTML = "";
 
     // Display suggested users and create follow forms if there are users
     if (users.length > 0) {
