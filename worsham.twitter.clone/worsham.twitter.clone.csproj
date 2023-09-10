@@ -5,14 +5,19 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>f7603161-d1ea-4dd4-8706-52fabd786336</UserSecretsId>
+		<IsPackable>false</IsPackable>
+		<MpaRoot>ClientApp\</MpaRoot>
+		<WWWRoot>wwwroot\</WWWRoot>
+		<DefaultItemExcludes>$(DefaultItemExcludes);$(MpaRoot)node_modules\**</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.21" />
+		<PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.21" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.21">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.21" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.21" />
@@ -21,22 +26,59 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Shared\_UnAuthenticatedLayout.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="wwwroot\css\site.css">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="wwwroot\favicon.ico">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
+		<Content Update="Views\Shared\_UnAuthenticatedLayout.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="wwwroot\favicon.ico">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="wwwroot\uploads\profile_pictures\" />
+		<Folder Include="wwwroot\uploads\profile_pictures\" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Don't publish the MPA source files, but do show them in the project files list -->
+		<Content Remove="$(MpaRoot)**"/>
+		<None Remove="$(MpaRoot)**"/>
+		<None Include="$(MpaRoot)**" Exclude="$(MpaRoot)node_modules\**"/>
+	</ItemGroup>
+
+	<Target Name="NpmInstall" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(MpaRoot)node_modules') ">
+		<!-- Ensure Node.js is installed -->
+		<Exec Command="node --version" ContinueOnError="true">
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+		</Exec>
+		<Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE."/>
+		<Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..."/>
+		<Exec WorkingDirectory="$(MpaRoot)" Command="npm install"/>
+	</Target>
+
+	<Target Name="NpmRunBuild" BeforeTargets="Build" DependsOnTargets="NpmInstall">
+		<Exec WorkingDirectory="$(MpaRoot)" Command="npm run build"/>
+	</Target>
+
+	<Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+		<!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+		<Exec WorkingDirectory="$(MpaRoot)" Command="npm install"/>
+		<Exec WorkingDirectory="$(MpaRoot)" Command="npm run build"/>
+		<!-- Include the newly-built files in the publish output -->
+		<ItemGroup>
+			<DistFiles Include="$(WWWRoot)dist\**"/>
+			<ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+				<RelativePath>%(DistFiles.Identity)</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+				<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="NpmClean" BeforeTargets="Clean">
+		<RemoveDir Directories="$(WWWRoot)dist"/>
+		<RemoveDir Directories="$(MpaRoot)node_modules"/>
+	</Target>
 
 </Project>
