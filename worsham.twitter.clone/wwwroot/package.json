@@ -1,0 +1,69 @@
+{
+  "name": "brian.worsham.twitter.clone",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A class project to make a clone of twitter for the Full Stack Developer course from Simplilearn.",
+  "dependencies": {
+    
+  },
+  "devDependencies": {},
+  "author": "Brian Worsham",
+  "license": "ISC",
+  "eslintConfig": {
+    "parser": "@babel/eslint-parser",
+    "extends": [
+      "prettier"
+    ],
+    "parserOptions": {
+      "requireConfigFile": false,
+      "ecmaVersion": 6,
+      "sourceType": "module",
+      "babelOptions": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": "defaults"
+            }
+          ]
+        ]
+      }
+    },
+    "plugins": [
+      "prettier"
+    ],
+    "env": {
+      "node": true,
+      "browser": true,
+      "es6": true
+    },
+    "rules": {
+      "no-console": 0,
+      "prettier/prettier": [
+        "error",
+        {
+          "endOfLine": "auto"
+        }
+      ]
+    }
+  },
+  "eslintIgnore": [
+    "/wwwroot/dist",
+    "/wwwroot/libraries",
+    "/wwwroot/src/js/modules"
+  ],
+  "browserslist": [
+    "defaults and supports es6-module",
+    "maintained node versions"
+  ],
+  "scripts": {
+    "clean_css": "cleancss --batch --batch-suffix .min ./wwwroot/src/css/*.css",
+    "postclean_css": "copyfiles -e \"node_modules/**/*.min.css\" -f \"**/*.min.css\" wwwroot/dist/css && del-cli \"wwwroot/src/css/*.min.css\"",
+    "prebuild_prod": "npm install && cleancss --batch --batch-suffix .min ./src/css/*.css && del-cli \"dist/css/*\"",
+    "build_prod": "webpack --config webpack.production.config.js",
+    "postbuild_prod": "del-cli \"./src/css/*.min.css\"",
+    "prebuild_local": "npm install",
+    "build_local": "webpack --config webpack.local.config.js",
+    "lint": "eslint --fix"
+  }
+}
