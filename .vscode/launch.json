@@ -30,6 +30,33 @@
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"
+        },
+        {
+            "name": ".NET Core Launch & Angular",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/worsham.twitter.clone.angular/bin/Debug/net6.0/worsham.twitter.clone.angular.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/worsham.twitter.clone.angular",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "^https?://localhost:5001"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/worsham.twitter.clone.angular/Views"
+            }
+        },
+        {
+            "name": "Launch Chrome against localhost",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://localhost:44429",
+            "webRoot": "${workspaceFolder}/worsham.twitter.clone.angular"
         }
     ]
 }
