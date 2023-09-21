@@ -364,3 +364,16 @@ FodyWeavers.xsd
 
 #uploads
 uploads/
+/worsham.twitter.clone/wwwroot/dist/
+/worsham.twitter.clone/wwwroot/dist/bootstrap_js.entry.js
+/worsham.twitter.clone/wwwroot/dist/landingPage.entry.js
+/worsham.twitter.clone/wwwroot/dist/login.entry.js
+/worsham.twitter.clone/wwwroot/dist/notFollowed.entry.js
+/worsham.twitter.clone/wwwroot/dist/profilePage.entry.js
+/worsham.twitter.clone/wwwroot/dist/registrationForm.entry.js
+/worsham.twitter.clone/wwwroot/dist/site.css
+/worsham.twitter.clone/wwwroot/dist/site.entry.js
+/worsham.twitter.clone/wwwroot/dist/validation.entry.js
+/worsham.twitter.clone.angular/ClientApp/.angular/cache/15.2.7
+worsham.twitter.clone.angular/ClientApp/.angular/cache/16.2.2/babel-webpack/
+worsham.twitter.clone.angular/ClientApp/.angular/cache/16.2.2/angular-webpack/
