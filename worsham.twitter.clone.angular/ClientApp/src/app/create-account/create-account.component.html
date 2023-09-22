@@ -1,6 +1,4 @@
-<!-- @model worsham.twitter.clone.Models.EntityModels.Users -->
-
-<div class="modal fade create-account" id="createAccountModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade create-account" id="createAccountModal" tabindex="-1" aria-hidden="true" [hidden]="submitted">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header d-flex justify-content-start border-bottom-0">
@@ -11,43 +9,69 @@
         <div class="text-danger" id="createAccountErrorMessage"></div>
       </div>
       <div class="container">
-        <form id="createAccountForm" asp-controller="Users" asp-action="Create" method="post">
+        <form id="createAccountForm" (ngSubmit)="createUser()" #createAccountForm="ngForm" method="post">
           <div asp-validation-summary="ModelOnly" class="text-danger"></div>
           <div class="form-group">
-            <label asp-for="UserName" class="control-label">Name</label>
+            <label for="UserName" class="control-label">Name</label>
             <span data-bs-toggle="tooltip" data-bs-placement="right" title="Name max length is 20 characters.">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
               </svg>
             </span>
-            <input asp-for="UserName" class="form-control" />
-            <span asp-validation-for="UserName" class="text-danger"></span>
+            <input type="text" id="userName" class="form-control" [(ngModel)]="model.userName" name="userName" #userName="ngModel" maxlength="20" required />
+            <div [hidden]="userName.valid || userName.pristine" class="alert alert-danger">
+              <div *ngIf="userName.errors?.['required']">
+                Name is required
+              </div>
+              <div *ngIf="userName.errors?.['maxlength']">
+                The maximum length for name is 20 characters.
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <label asp-for="Email" class="control-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
+            <label for="email" class="control-label">Email</label>
+            <input type="email" id="email" class="form-control" [(ngModel)]="model.email" name="email" maxlength="200" #email="ngModel" required email />
+            <div [hidden]="email.valid || email.pristine" class="alert alert-danger">
+              <div *ngIf="email.errors?.['required']">
+                Email is required
+              </div>
+              <div *ngIf="email.errors?.['email']">
+                Email must be a valid email address.
+              </div>
+              <div *ngIf="email.errors?.['maxlength']">
+                The maximum length for email is 200 characters.
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <label asp-for="Password" class="control-label"></label>
-            <span data-bs-toggle="tooltip" data-bs-placement="right" title="Password minimum lenght is 8 and the maximum length is 12. Must include at least 1 special character, 1 lowercase letter, and 1 capital letter.">
+            <label for="password" class="control-label">Password</label>
+            <span data-bs-toggle="tooltip" data-bs-placement="right" title="Password minimum length is 8 and the maximum length is 12. Must include at least 1 special character, 1 lowercase letter, and 1 capital letter.">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
               </svg>
             </span>
-            <input asp-for="Password" id="registerPassword" class="form-control" />
-            <span asp-validation-for="Password" class="text-danger"></span>
+            <input id="password" class="form-control" type="text" minlength="8" maxlength="12" name="Password" [(ngModel)]="model.password" #password="ngModel" [pattern]="passwordPattern" required>
+            <div [hidden]="password.valid || password.pristine" class="alert alert-danger">
+              <div *ngIf="password.errors?.['required']">
+                Password is required
+              </div>
+              <div *ngIf="password.errors?.['pattern']">
+                Password must contain at least one uppercase letter, one lowercase letter, and one special character, and be between 8 to 12 characters long.
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <label asp-for="Bio" class="control-label"></label>
-            <input asp-for="Bio" class="form-control" />
-            <span asp-validation-for="Bio" class="text-danger"></span>
+            <label for="bio" class="control-label">Bio</label>
+            <input class="form-control" type="text" maxlength="160" id="bio" maxlength="160" name="Bio" [(ngModel)]="model.bio" #bio="ngModel">
+            <div [hidden]="bio.valid || bio.pristine" class="alert alert-danger">
+              The maximum length for bio is 160 characters.
+            </div>
           </div>
           <div class="d-flex justify-content-center">
-            <input type="hidden" asp-for="UserRole" value="newuser" />
-            <button type="submit" class="btn btn-primary--dark m-2">Create Account</button>
+            <input type="hidden" value="newuser" id="userRole" name="UserRole" [(ngModel)]="model.userRole" #userRole="ngModel">
+            <button type="submit" class="btn btn-primary--dark m-2" [disabled]="!createAccountForm.form.valid">Create Account</button>
           </div>
         </form>
       </div>

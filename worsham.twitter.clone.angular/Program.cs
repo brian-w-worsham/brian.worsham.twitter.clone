@@ -12,8 +12,23 @@ namespace worsham.twitter.clone.angular
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("TwitterCloneConnectionString") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<TwitterCloneContext>(options => options.UseSqlServer(connectionString));
+            var connectionString =
+                builder.Configuration.GetConnectionString("TwitterCloneConnectionString")
+                ?? throw new InvalidOperationException(
+                    "Connection string 'DefaultConnection' not found."
+                );
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(
+                    "AllowOrigin",
+                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                );
+            });
+
+            builder.Services.AddDbContext<TwitterCloneContext>(
+                options => options.UseSqlServer(connectionString)
+            );
             //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDistributedMemoryCache();
@@ -25,15 +40,17 @@ namespace worsham.twitter.clone.angular
                 options.Cookie.IsEssential = true;
             });
 
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
-            {
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SameSite = SameSiteMode.Strict;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                // Todo: replace this path logic below with Angular somehow
-                //options.LoginPath = "/Users/Login"; // Specify the login path
-                //options.LogoutPath = "/Users/Logout"; // Specify the logout path
-            });
+            builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    // Todo: replace this path logic below with Angular somehow
+                    //options.LoginPath = "/Users/Login"; // Specify the login path
+                    //options.LogoutPath = "/Users/Logout"; // Specify the logout path
+                });
 
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
@@ -41,6 +58,8 @@ namespace worsham.twitter.clone.angular
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            
 
             app.UseSession();
 
@@ -54,14 +73,12 @@ namespace worsham.twitter.clone.angular
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseCors("AllowOrigin");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller}/{action=Index}/{id?}");
+            app.MapControllerRoute(name: "default", pattern: "{controller}/{action=Index}/{id?}");
 
             app.MapFallbackToFile("index.html");
 

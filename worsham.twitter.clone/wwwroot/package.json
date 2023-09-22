@@ -3,10 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "description": "A class project to make a clone of twitter for the Full Stack Developer course from Simplilearn.",
-  "dependencies": {
-    
+  "devDependencies": {
+    "eslint": "^8.49.0"
   },
-  "devDependencies": {},
   "author": "Brian Worsham",
   "license": "ISC",
   "eslintConfig": {
