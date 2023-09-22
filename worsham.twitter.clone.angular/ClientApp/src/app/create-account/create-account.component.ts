@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PatternValidator } from '@angular/forms';
+import { NgModel, PatternValidator } from '@angular/forms';
 import { Modal } from 'bootstrap';
 import { User } from '../models/user';
 import * as bootstrap from 'bootstrap';
@@ -20,6 +20,8 @@ export class CreateAccountComponent implements OnInit {
   private httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
   };
+  @ViewChild('userName') userName!: NgModel;
+  @ViewChild('email') email!: NgModel;
 
   constructor(http: HttpClient) {
     this.http = http;
@@ -44,20 +46,48 @@ export class CreateAccountComponent implements OnInit {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     //debugger;
     // this.submitted = true;
-    console.log(`User: ${this.model.userName} created as ${this.model}!`);
+    console.log(`User: ${this.model.userName} created!`);
     //debugger;
     this.http
       .post('https://localhost:7232/api/Users', this.model, {
         headers: headers,
       })
-      .subscribe((response) => {
-        console.log(response);
-      });
+      .pipe(catchError(this.handleError<any>('createUser')))
+      .subscribe(
+        (response) => {
+          if(response.success == false){
+            //update the UI to show the error
+            switch (response.errorMessage) {
+              case `The name, ${this.model.userName}, is already taken.`:
+                this.userName.control.setErrors({ invalid: true });
+                const userNameErrorMsgErrorDiv =
+                  document.getElementById('userNameErrorMsg');
+                if (userNameErrorMsgErrorDiv) {
+                  userNameErrorMsgErrorDiv.innerHTML = response.errorMessage;
+                }
+                break;
+              case `The email address, ${this.model.email}, is already taken.`:
+                this.email.control.setErrors({ invalid: true });
+                const emailErrorDiv = document.getElementById('emailErrorMsg');
+                if(emailErrorDiv){
+                  emailErrorDiv.innerHTML = response.errorMessage;
+                }
+                break;
+            }
+            console.log(response.errorMessage);
+          }
+          console.log(response);
+        },
+        (error) => {
+          console.log(error.message);
+        }
+      );
   }
 
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(error);
+      debugger;
       return of(result as T);
     };
   }

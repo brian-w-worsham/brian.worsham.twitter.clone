@@ -184,6 +184,16 @@ namespace worsham.twitter.clone.angular.Services
         }
 
         /// <summary>
+        /// Checks if the given email is already taken by a user in the database.
+        /// </summary>
+        /// <param name="email">The email to check.</param>
+        /// <returns>True if the email is taken, false otherwise.</returns>
+        public async Task<bool> IsEmailTaken(string email)
+        {
+            return await _context.Users.AnyAsync(u => u.Email == email);
+        }
+
+        /// <summary>
         /// Clears the user's session, effectively logging them out.
         /// </summary>
         /// <param name="httpContext">The HttpContext representing the user's session context.</param>

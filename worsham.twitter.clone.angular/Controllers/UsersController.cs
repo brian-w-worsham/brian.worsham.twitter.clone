@@ -166,13 +166,26 @@ namespace worsham.twitter.clone.angular.Controllers
                         user.UserName
                     );
 
+                    bool isEmailTaken = await _authenticationService.IsEmailTaken(user.Email);
+
                     if (isUsernameTaken)
                     {
                         return Json(
                             new
                             {
                                 success = false,
-                                errorMessage = "This username is already taken."
+                                errorMessage = $"The name, {user.UserName}, is already taken."
+                            }
+                        );
+                    }
+
+                    if(isEmailTaken)
+                    {
+                        return Json(
+                            new
+                            {
+                                success = false,
+                                errorMessage = $"The email address, {user.Email}, is already taken."
                             }
                         );
                     }

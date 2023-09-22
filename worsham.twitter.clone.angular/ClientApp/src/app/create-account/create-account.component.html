@@ -20,7 +20,7 @@
               </svg>
             </span>
             <input type="text" id="userName" class="form-control" [(ngModel)]="model.userName" name="userName" #userName="ngModel" maxlength="20" required />
-            <div [hidden]="userName.valid || userName.pristine" class="alert alert-danger">
+            <div [hidden]="userName.valid || userName.pristine" id="userNameErrorMsg" class="alert alert-danger">
               <div *ngIf="userName.errors?.['required']">
                 Name is required
               </div>
@@ -32,7 +32,7 @@
           <div class="form-group">
             <label for="email" class="control-label">Email</label>
             <input type="email" id="email" class="form-control" [(ngModel)]="model.email" name="email" maxlength="200" #email="ngModel" required email />
-            <div [hidden]="email.valid || email.pristine" class="alert alert-danger">
+            <div [hidden]="email.valid || email.pristine" id="emailErrorMsg" class="alert alert-danger">
               <div *ngIf="email.errors?.['required']">
                 Email is required
               </div>
