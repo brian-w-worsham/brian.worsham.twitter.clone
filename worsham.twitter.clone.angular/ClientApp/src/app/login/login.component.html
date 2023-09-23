@@ -1,0 +1,41 @@
+<div class="modal fade login" id="loginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-start border-bottom-0">
+        <button type="button" class="btn-close mx-0" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h2>Sign in to X</h2>
+      </div>
+      <div class="container">
+        <form id="loginForm" #loginForm="ngForm" (ngSubmit)="login()" method="post">
+          <div [hidden]="(successfulPost)" id="loginErrorMessage" class="alert alert-danger"></div>
+          <div class="form-group">
+            <label for="loginUserName" class="control-label">Name</label>
+            <input id="loginUserName" name="UserName" class="form-control" type="text" [(ngModel)]="model.userName" #userName="ngModel" maxlength="20" required />
+            <div [hidden]="userName.valid || userName.pristine" id="userNameErrorMsg" class="alert alert-danger">
+              <div *ngIf="userName.errors?.['required']">
+                Name is required
+              </div>
+              <div *ngIf="userName.errors?.['maxlength']">
+                The maximum length for name is 20 characters.
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword" class="control-label">Password</label>
+            <input name="Password" id="loginPassword" class="form-control" type="password" maxlength="12" [(ngModel)]="model.password" #password="ngModel" required/>
+            <div [hidden]="password.valid || password.pristine" class="alert alert-danger">
+              <div *ngIf="password.errors?.['required']">
+                Password is required
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary--dark m-2" [disabled]="!loginForm.form.valid">Log in</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

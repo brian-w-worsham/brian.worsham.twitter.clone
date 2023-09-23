@@ -1,16 +1,5 @@
-<!-- @model worsham.twitter.clone.Models.EntityModels.Users
-
-@{
-ViewData["Title"] = "Twitter. It’s what’s happening / X";
-Layout = "~/Views/Shared/_UnAuthenticatedLayout.cshtml";
-}
-<script>
-  var didUserRegister = '@ViewData["DidUserRegister"]' === 'True';
-</script>
-
-<partial name="_CreateAccountModal" />
-<partial name="_LoginModal" /> -->
 <app-create-account></app-create-account>
+<app-login></app-login>
 
 <div class="container col-xl-10 col-xxl-8 px-4 py-5 d-grid height-full">
   <div class="row align-items-center g-lg-5 py-5">
@@ -53,8 +42,6 @@ Layout = "~/Views/Shared/_UnAuthenticatedLayout.cshtml";
   </div>
 </div>
 <app-footer></app-footer>
-<!-- <script src="~/js/landingPage.js" asp-append-version="true"></script> -->
-
 
 
 <!-- <h1>Hello, world!</h1>

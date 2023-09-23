@@ -2,9 +2,9 @@ import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NgModel, PatternValidator } from '@angular/forms';
 import { Modal } from 'bootstrap';
-import { User } from '../models/user';
 import * as bootstrap from 'bootstrap';
 import { Observable, catchError, of } from 'rxjs';
+import { User } from '../models/user';
 
 @Component({
   selector: 'app-create-account',
@@ -14,7 +14,6 @@ import { Observable, catchError, of } from 'rxjs';
 export class CreateAccountComponent implements OnInit {
   modal!: Modal;
   model = new User('', '', '', 'newuser');
-  submitted = false;
   passwordPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,12}$';
   http!: HttpClient;
   private httpOptions = {
@@ -45,11 +44,8 @@ export class CreateAccountComponent implements OnInit {
   createUser(): void {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     //debugger;
-    // this.submitted = true;
-    console.log(`User: ${this.model.userName} created!`);
-    //debugger;
     this.http
-      .post('https://localhost:7232/api/Users', this.model, {
+      .post('https://localhost:7232/api/users/create', this.model, {
         headers: headers,
       })
       .pipe(catchError(this.handleError<any>('createUser')))
@@ -93,6 +89,7 @@ export class CreateAccountComponent implements OnInit {
             // close registration modal and open login modal
             this.modal.hide();
             console.log(response);
+            document.getElementById('btnSignIn')?.click();
           }
         },
         (error) => {

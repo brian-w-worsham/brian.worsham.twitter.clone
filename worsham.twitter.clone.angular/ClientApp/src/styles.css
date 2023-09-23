@@ -29,6 +29,16 @@ head {
 	display: none;
 }
 
+a {
+	color: #0077cc;
+}
+
+.btn-primary {
+	color: #fff;
+	background-color: #1b6ec2;
+	border-color: #1861ac;
+}
+
 .btn-primary--dark {
 	background-color: black;
 	border-color: black;
@@ -50,5 +60,3 @@ head {
 }
 
 @import "authenticated.css";
-/* @import "unauthenticated.css"; */
-

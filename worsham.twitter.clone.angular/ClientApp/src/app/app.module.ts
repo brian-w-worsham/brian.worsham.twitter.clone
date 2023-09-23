@@ -10,6 +10,7 @@ import { HomeComponent } from './home/home.component';
 import { HttpClientModule } from '@angular/common/http';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { NgModule } from '@angular/core';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { NgModule } from '@angular/core';
     CounterComponent,
     FooterComponent,
     CreateAccountComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using worsham.twitter.clone.angular.Models;
 using worsham.twitter.clone.angular.Models.EntityModels;
 using worsham.twitter.clone.angular.Services;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
     [EnableCors("AllowOrigin")]
-    // [EnableCors("AllowAll")]
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UsersController : TwitterController
     {
         private readonly TwitterCloneContext _context;
@@ -153,10 +154,8 @@ namespace worsham.twitter.clone.angular.Controllers
         /// returns an error JSON response.
         /// </remarks>
         // [ValidateAntiForgeryToken]
-        [HttpPost]
-        public async Task<IActionResult> Create(
-            [FromBody] Users user
-        )
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] Users user)
         {
             if (ModelState.IsValid)
             {
@@ -179,7 +178,7 @@ namespace worsham.twitter.clone.angular.Controllers
                         );
                     }
 
-                    if(isEmailTaken)
+                    if (isEmailTaken)
                     {
                         return Json(
                             new
@@ -229,6 +228,56 @@ namespace worsham.twitter.clone.angular.Controllers
                 }
             }
             return Json(new { success = false, errorMessage = "Invalid input data." });
+        }
+
+        /// <summary>
+        /// Handles the HTTP POST request for user login.
+        /// </summary>
+        /// <param name="userName">The username entered by the user.</param>
+        /// <param name="password">The password entered by the user.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the action result.</returns>
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            try
+            {
+                var user = await _authenticationService.AuthenticateUser(
+                    loginDto.UserName,
+                    loginDto.Password
+                );
+
+                // Authentication successful - Set up the session here
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("UserName", user.UserName);
+                HttpContext.Session.SetString("UserRole", user.UserRole);
+
+                base._logger.LogInformation("Successful login for user: {UserName}", user.UserName);
+                return Json(new LoginResult { Success = true });
+            }
+            catch (ArgumentException ex) // Replace AuthenticationException with the actual exception type
+            {
+                // Log the authentication exception
+                base._logger.LogError(ex, ex.Message);
+                return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
+            }
+            catch (AuthenticationException ex) // Replace AuthenticationException with the actual exception type
+            {
+                // Log the authentication exception
+                base._logger.LogError(ex, ex.Message);
+                return Json(new LoginResult { Success = false, ErrorMessage = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log other exceptions
+                base._logger.LogError(ex, ex.Message);
+                return Json(
+                    new LoginResult
+                    {
+                        Success = false,
+                        ErrorMessage = "An error occurred during login. Please try again later."
+                    }
+                );
+            }
         }
 
         /// <summary>
