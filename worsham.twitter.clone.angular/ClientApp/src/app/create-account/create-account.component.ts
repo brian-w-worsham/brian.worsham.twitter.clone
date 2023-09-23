@@ -55,7 +55,7 @@ export class CreateAccountComponent implements OnInit {
       .pipe(catchError(this.handleError<any>('createUser')))
       .subscribe(
         (response) => {
-          if(response.success == false){
+          if (response.success == false) {
             //update the UI to show the error
             switch (response.errorMessage) {
               case `The name, ${this.model.userName}, is already taken.`:
@@ -69,14 +69,31 @@ export class CreateAccountComponent implements OnInit {
               case `The email address, ${this.model.email}, is already taken.`:
                 this.email.control.setErrors({ invalid: true });
                 const emailErrorDiv = document.getElementById('emailErrorMsg');
-                if(emailErrorDiv){
+                if (emailErrorDiv) {
                   emailErrorDiv.innerHTML = response.errorMessage;
                 }
                 break;
             }
             console.log(response.errorMessage);
+          } else {
+            // successfully registered user
+            // clear all the modal's input values so it has a clean slate when it's opened again
+            const modalInputs = document.querySelectorAll(
+              '#createAccountForm input'
+            );
+            if (modalInputs) {
+              modalInputs.forEach((input) => {
+                const inputElement = input as HTMLInputElement;
+                // if inputElement has "userRole" as it's id skip it
+                if (inputElement.id !== 'userRole') {
+                  inputElement.value = '';
+                }
+              });
+            }
+            // close registration modal and open login modal
+            this.modal.hide();
+            console.log(response);
           }
-          console.log(response);
         },
         (error) => {
           console.log(error.message);
