@@ -1,0 +1,61 @@
+.container-fluid.float-end.authenticated.right-panel {
+  width: 33.3333%;
+}
+
+div#suggestedUsersCard {
+  max-width: 22rem;
+}
+
+h2 {
+    font-size: 1.333rem;
+    font-weight: 700;
+}
+
+
+.authenticated .card {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(239, 243, 244);
+    background-color: rgba(255,255,255,1.00);
+}
+
+.authenticated .card-body button.btn-link.icon:focus, .authenticated .card-body button.btn-link.icon:hover {
+    opacity: 0.5;
+    border-radius: 50%;
+    height: 2.1rem;
+    width: 2.1rem;
+}
+
+
+.authenticated .card-body button.btn-link.icon-like:focus, .authenticated .card-body button.btn-link.icon-like:hover {
+    color: lightpink;
+    background-color: lightpink;
+}
+
+.authenticated .card-body button.btn-link.icon-like path:focus, .authenticated .card-body button.btn-link.icon-like path:hover {
+    fill: pink;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet:focus, .authenticated .card-body button.btn-link.icon-retweet:hover {
+    color: lawngreen;
+    background-color: lawngreen;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet path:focus, .authenticated .card-body button.btn-link.icon-retweet path:hover {
+    fill: lawngreen;
+}
+
+.authenticated .card-body button.btn-link.icon-comment:focus, .authenticated .card-body button.btn-link.icon-comment:hover {
+    color: lightblue;
+    background-color: lightblue;
+}
+
+.authenticated .card-body button.btn-link.icon-comment path:focus, .authenticated .card-body button.btn-link.icon-comment path:hover {
+    fill: lightblue;
+}
+
+.authenticated .card-text, .authenticated .card-title a, .authenticated a.go-back {
+    color: inherit;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+}

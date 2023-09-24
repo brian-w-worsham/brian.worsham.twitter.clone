@@ -88,7 +88,9 @@ export class CreateAccountComponent implements OnInit {
             }
             // close registration modal and open login modal
             this.modal.hide();
-            console.log(response);
+            console.log(
+              `Successfully registered user ${this.model.userName} - ${response}`
+            );
             document.getElementById('btnSignIn')?.click();
           }
         },

@@ -1,18 +1,47 @@
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+body {
+  font-family: "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
 }
 
-html {
-  font-size: 14px;
-}
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+header {
+  width: 33.3333%;
 }
 
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+nav.nav {
+  line-height: 3.25rem;
+}
+
+a.nav-link {
+  color: rgb(15, 20, 25);
+}
+
+.nav-link:hover, .nav-link:focus {
+    color: #0a58ca;
+}
+
+a.nav-link.active {
+  font-weight: 700;
+}
+
+input.nav-link {
+  display: block;
+  color: rgb(15, 20, 25);
+  text-decoration: none;
+  border: none;
+  background-color: transparent;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
+}
+
+input.nav-link:hover,
+input.nav-link:focus {
+  color: #0a58ca;
+}
+
+input.nav-link.active {
+  font-weight: 700;
+}
+
+h1 .logo {
+  height: 2rem;
 }

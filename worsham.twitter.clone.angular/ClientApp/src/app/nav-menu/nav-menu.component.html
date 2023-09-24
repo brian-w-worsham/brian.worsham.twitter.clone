@@ -1,4 +1,4 @@
-<header>
+<!-- <header>
   <nav
     class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
   >
@@ -40,5 +40,62 @@
         </ul>
       </div>
     </div>
+  </nav>
+</header> -->
+
+<header class="float-start mt-0 pe-5">
+  <nav class="nav flex-column float-end fs-5 text-break">
+    <h1 role="heading" class="ms-2">
+      <a asp-action="Index" asp-controller="Tweets" aria-label="Twitter" role="link" class="">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="logo">
+          <g>
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+          </g>
+        </svg>
+      </a>
+    </h1>
+    <ul class="navbar-nav flex-grow">
+      <li class="nav-item">
+        <a class="nav-link" [routerLinkActive]="['active']" [routerLink]="['/home']">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [routerLinkActive]="['active']" [routerLink]="['/counter']">Counter</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/explore']">Explore</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/notifications']">Notifications</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/messages']">Messages</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/lists']">Lists</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/bookmarks']">Bookmarks</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/communities']">Communities</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/verified']">Verified</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [routerLinkActive]="['active']" [routerLink]="['/profile']">Profile</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/more']">More</a>
+      </li>
+      <li class="nav-item">
+        <!-- <a class="nav-link text-dark" [routerLinkActive]="['active']" [routerLink]="['/profile']">Profile</a> -->
+        <form asp-action="Logout" asp-controller="Users" method="post">
+          <input type="submit" class="nav-link" value="Logout" />
+        </form>
+      </li>
+    </ul>
+
+
   </nav>
 </header>

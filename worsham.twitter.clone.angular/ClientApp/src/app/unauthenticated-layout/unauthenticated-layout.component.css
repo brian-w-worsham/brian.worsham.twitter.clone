@@ -20,7 +20,7 @@
 button.accept-policy {
 	font-size: 1rem;
 	line-height: inherit;
-}*/
+}
 
 svg {
 	fill: currentColor;
@@ -71,7 +71,7 @@ div.join-today {
 	color: rgba(15, 20, 25, 1);
 	border: 0 solid black;
 	box-sizing: border-box;
-	display: block; /* change this to block or inline-block */
+	display: block;
 	margin-left: 0;
 	margin-right: 0;
 	margin-top: 0;
