@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.angular.Models.EntityModels;
 using worsham.twitter.clone.angular.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace worsham.twitter.clone.angular
 {
@@ -10,6 +13,7 @@ namespace worsham.twitter.clone.angular
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddUserSecrets<Program>();
 
             // Add services to the container.
             var connectionString =
@@ -22,7 +26,7 @@ namespace worsham.twitter.clone.angular
             {
                 options.AddPolicy(
                     "AllowOrigin",
-                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Authorization")
                 );
             });
 
@@ -40,16 +44,27 @@ namespace worsham.twitter.clone.angular
                 options.Cookie.IsEssential = true;
             });
 
-            builder.Services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
+            // var secretKey = GenerateRandomString(64);
+
+            // retrieve SecretKeyForJwtToken from secrets.json
+            string secretKeyForJwtToken = builder.Configuration["SecretKeyForJwtToken"] ?? throw new InvalidOperationException("SecretKeyForJwtToken not found in configuration.");
+
+            string validIssuer = builder.Configuration["ValidIssuer"] ?? throw new InvalidOperationException("ValidIssuer not found in configuration.");
+            string validAudience = builder.Configuration["ValidAudience"] ?? throw new InvalidOperationException("ValidAudience not found in configuration.");
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
                 {
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    // Todo: replace this path logic below with Angular somehow
-                    //options.LoginPath = "/Users/Login"; // Specify the login path
-                    //options.LogoutPath = "/Users/Logout"; // Specify the logout path
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = validIssuer,
+                        ValidAudience = validAudience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKeyForJwtToken))
+                    };
                 });
 
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -59,7 +74,7 @@ namespace worsham.twitter.clone.angular
 
             var app = builder.Build();
 
-            
+
 
             app.UseSession();
 
@@ -83,6 +98,20 @@ namespace worsham.twitter.clone.angular
             app.MapFallbackToFile("index.html");
 
             app.Run();
+
+            string GenerateRandomString(int length)
+            {
+                const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                var random = new Random();
+                var result = new StringBuilder(length);
+
+                for (int i = 0; i < length; i++)
+                {
+                    result.Append(chars[random.Next(chars.Length)]);
+                }
+
+                return result.ToString();
+            }
         }
     }
 }

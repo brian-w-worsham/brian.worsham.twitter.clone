@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
       .post('https://localhost:7232/api/users/login', this.model, {
         headers: headers,
       })
-      .pipe(catchError(this.handleError<any>('createUser')))
+      .pipe(catchError(this.handleError<any>('login')))
       .subscribe(
         (response) => {
           if (response.success == false) {
@@ -52,7 +52,9 @@ export class LoginComponent implements OnInit {
             console.info('successfully authenticated user');
             this.modal.hide();
             console.log(response);
-            window.location.href = '/Tweets/Index';
+            // Store the JWT token in local storage
+            localStorage.setItem('jwtToken', response.token);
+            window.location.href = '/home';
           }
         },
         (error) => {
@@ -67,7 +69,7 @@ export class LoginComponent implements OnInit {
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(error);
-      debugger;
+      //debugger;
       return of(result as T);
     };
   }

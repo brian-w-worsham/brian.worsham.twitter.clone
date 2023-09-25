@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using worsham.twitter.clone.angular.Models;
 using worsham.twitter.clone.angular.Models.EntityModels;
 using worsham.twitter.clone.angular.Services;
+using IAuthorizationService = worsham.twitter.clone.angular.Services.IAuthorizationService;
+using Microsoft.Extensions.Configuration;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
@@ -20,16 +27,18 @@ namespace worsham.twitter.clone.angular.Controllers
     {
         private readonly TwitterCloneContext _context;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IConfiguration _configuration;
 
         public UsersController(
             TwitterCloneContext context,
             IAuthenticationService authenticationService,
             ILogger<UsersController> logger,
-            IAuthorizationService authorizationService
+            IAuthorizationService authorizationService, IConfiguration configuration
         ) : base(logger, authorizationService)
         {
             _context = context;
             _authenticationService = authenticationService;
+            _configuration = configuration;
         }
 
         // GET: api/Users
@@ -246,13 +255,37 @@ namespace worsham.twitter.clone.angular.Controllers
                     loginDto.Password
                 );
 
+                // Authentication successful - Generate JWT token
+                // retrieve SecretKeyForJwtToken from secrets.json
+                var secretKey = _configuration["SecretKeyForJwtToken"];
+                var key = Encoding.ASCII.GetBytes(secretKey);
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, user.UserRole),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(
+                        new SymmetricSecurityKey(key),
+                        SecurityAlgorithms.HmacSha256Signature
+                    )
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
                 // Authentication successful - Set up the session here
-                HttpContext.Session.SetInt32("UserId", user.Id);
-                HttpContext.Session.SetString("UserName", user.UserName);
-                HttpContext.Session.SetString("UserRole", user.UserRole);
+                // HttpContext.Session.SetInt32("UserId", user.Id);
+                // HttpContext.Session.SetString("UserName", user.UserName);
+                // HttpContext.Session.SetString("UserRole", user.UserRole);
 
                 base._logger.LogInformation("Successful login for user: {UserName}", user.UserName);
-                return Json(new LoginResult { Success = true });
+                // Send JWT token back to front end
+                return Json(new LoginResult { Success = true, Token = tokenString });
             }
             catch (ArgumentException ex) // Replace AuthenticationException with the actual exception type
             {

@@ -103,7 +103,7 @@ export class CreateAccountComponent implements OnInit {
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(error);
-      debugger;
+      //debugger;
       return of(result as T);
     };
   }
