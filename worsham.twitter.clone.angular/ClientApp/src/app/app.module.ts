@@ -11,7 +11,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { NgModule } from '@angular/core';
 import { LoginComponent } from './login/login.component';
-import { TweetsfeedComponent } from './tweetsfeed/tweetsfeed.component';
 import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticated-layout.component';
 import { SuggestedUsersPanelComponent } from './suggested-users-panel/suggested-users-panel.component';
 import { TweetFormComponent } from './tweet-form/tweet-form.component';
@@ -26,7 +25,6 @@ import { TweetListComponent } from './tweet-list/tweet-list.component';
     FooterComponent,
     CreateAccountComponent,
     LoginComponent,
-    TweetsfeedComponent,
     AuthenticatedLayoutComponent,
     SuggestedUsersPanelComponent,
     TweetFormComponent,

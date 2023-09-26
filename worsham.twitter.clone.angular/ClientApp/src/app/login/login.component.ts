@@ -38,8 +38,8 @@ export class LoginComponent implements OnInit {
         headers: headers,
       })
       .pipe(catchError(this.handleError<any>('login')))
-      .subscribe(
-        (response) => {
+      .subscribe({
+        next: (response) => {
           if (response.success == false) {
             this.successfulPost = false;
             document.querySelector('#loginErrorMessage')!.innerHTML =
@@ -57,13 +57,13 @@ export class LoginComponent implements OnInit {
             window.location.href = '/home';
           }
         },
-        (error) => {
+        error: (error) => {
           this.successfulPost = false;
           document.querySelector('#loginErrorMessage')!.innerHTML =
             error.message;
           console.log(error.message);
-        }
-      );
+        },
+      });
   }
 
   private handleError<T>(operation = 'operation', result?: T) {

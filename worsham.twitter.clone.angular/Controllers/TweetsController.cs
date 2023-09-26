@@ -156,15 +156,13 @@ namespace worsham.twitter.clone.angular.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    
-
                     // Retrieve the JWT token from the Authorization header
                     var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
                     var token = authorizationHeader?.Split(' ').Last();
 
                     // retrieve SecretKeyForJwtToken from secrets.json
                     var secretKey = _configuration["SecretKeyForJwtToken"];
-                    var key = Encoding.ASCII.GetBytes(secretKey);
+                    var key = secretKey != null ? Encoding.ASCII.GetBytes(secretKey) : throw new ArgumentNullException(nameof(secretKey));
 
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var validationParameters = new TokenValidationParameters
@@ -183,7 +181,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     // Todo: figure out why it fails to find the NameIdentifier claim
                     var userIdClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
                     // var userIdClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-                    int userId = int.Parse(userIdClaim.Value);
+                    int userId = int.Parse(userIdClaim?.Value ?? throw new Exception("userIdClaim is null"));
                     var user = await _context.Users.FindAsync(userId);
 
                     _ = _context.Add(new Tweets()
@@ -231,6 +229,180 @@ namespace worsham.twitter.clone.angular.Controllers
                             }
                         );
             }
+        }
+
+        /// <summary>
+        /// Retrieves and displays the user's feed of tweets and retweets on the Index page.
+        /// </summary>
+        /// <returns>
+        /// An IActionResult representing the Index page with the user's tweet feed.
+        /// </returns>
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                if (_currentUserId == null)
+                {
+                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    return RedirectToAction("Index", "Home");
+                }
+
+                var followedUserIds = GetFollowedUserIds();
+
+                var tweets = await GetTweetsAsync(followedUserIds);
+                var reTweets = await GetReTweetsAsync(followedUserIds);
+
+                var combinedAndSortedTweets = CombineAndSortTweets(tweets, reTweets);
+
+                _logger.LogInformation("Combined and sorted {Count} tweets and retweets.", combinedAndSortedTweets.Count);
+                _logger.LogInformation("Number of followed users: {FollowedUserCount}", followedUserIds.Count());
+
+                var tweetModels = await CreateTweetModels(combinedAndSortedTweets);
+
+                tweetModels.Sort((item1, item2) => item1.TimeSincePosted.CompareTo(item2.TimeSincePosted));
+
+                var tweetsFeedViewModel = new TweetsFeedViewModel(
+                    HasErrors: false,
+                    ValidationErrors: Enumerable.Empty<string>(),
+                    Tweets: tweetModels,
+                    Post: new PostModel(),
+                    currentUserId: _currentUserId
+                );
+
+                ViewData["page"] = "tweets";
+                ViewData["errorNotification"] = TempData["errorNotification"]?.ToString() ?? "";
+
+                return View(tweetsFeedViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting tweets in the Index method");
+                return RedirectToAction("Error", "Home");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the IDs of users followed by the current user.
+        /// </summary>
+        /// <returns>
+        /// An IQueryable of integers representing the followed user IDs.
+        /// </returns>
+        private IQueryable<int> GetFollowedUserIds()
+        {
+            // Retrieve the IDs of users that the current user is following.
+            var followedUserIds = _context.Follows
+                .Where(f => f.FollowerUserId == _currentUserId)
+                .Select(f => f.FollowedUserId);
+
+            return followedUserIds;
+        }
+
+        /// <summary>
+        /// Retrieves a list of tweets authored by the current user and the users they follow asynchronously.
+        /// </summary>
+        /// <param name="followedUserIds">An IQueryable of integers representing the followed user IDs.</param>
+        /// <returns>
+        /// An asynchronous task that returns a list of tweets that match the specified criteria.
+        /// </returns>
+        private async Task<List<Tweets>> GetTweetsAsync(IQueryable<int> followedUserIds)
+        {
+            return await _context.Tweets
+                .Where(t => t.TweeterId == _currentUserId || followedUserIds.Contains(t.TweeterId))
+                .Include(t => t.Comments)
+                .Include(t => t.Likes)
+                .Include(t => t.ReTweets)
+                .OrderByDescending(t => t.CreationDateTime)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves a list of retweets, including the original tweet, comments, likes, and retweets, for the current user and followed users.
+        /// </summary>
+        /// <param name="followedUserIds">A queryable collection of user IDs representing the users the current user is following.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task result is a list of <see cref="ReTweets"/> objects containing the retweets and associated data.
+        /// </returns>
+        /// <remarks>
+        /// This method fetches retweets from the database for the current user and the users they are following. It includes related data such as the original tweet,
+        /// comments, likes, and retweets on the original tweet. The result is ordered by the creation date and time of the retweets in descending order.
+        /// </remarks>
+        private async Task<List<ReTweets>> GetReTweetsAsync(IQueryable<int> followedUserIds)
+        {
+            return await _context.ReTweets
+                .Where(rt => rt.RetweeterId == _currentUserId || followedUserIds.Contains(rt.RetweeterId))
+                .Include(rt => rt.OriginalTweet)
+                .Include(rt => rt.OriginalTweet.Comments)
+                .Include(rt => rt.OriginalTweet.Likes)
+                .Include(rt => rt.OriginalTweet.ReTweets)
+                .OrderByDescending(rt => rt.ReTweetCreationDateTime)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Combines and sorts a list of tweets and retweets chronologically.
+        /// </summary>
+        /// <param name="tweets">A list of tweets to be combined and sorted.</param>
+        /// <param name="reTweets">A list of retweets to be combined and sorted.</param>
+        /// <returns>
+        /// A list of tweets and retweets combined and sorted by chronological order.
+        /// </returns>
+        private List<Tweets> CombineAndSortTweets(List<Tweets> tweets, List<ReTweets> reTweets)
+        {
+            var reTweetedTweets = reTweets.Select(rt => rt.OriginalTweet).ToList();
+            var combinedAndSortedTweets = new List<Tweets>();
+            combinedAndSortedTweets.AddRange(reTweetedTweets);
+            combinedAndSortedTweets.AddRange(tweets);
+
+            combinedAndSortedTweets.Sort((item1, item2) =>
+            {
+                DateTime minCreationTime1 = item1.CreationDateTime;
+                if (item1.ReTweets.Any())
+                {
+                    minCreationTime1 = item1.ReTweets.Min(rt => rt.ReTweetCreationDateTime);
+                }
+
+                DateTime minCreationTime2 = item2.CreationDateTime;
+                if (item2.ReTweets.Any())
+                {
+                    minCreationTime2 = item2.ReTweets.Min(rt => rt.ReTweetCreationDateTime);
+                }
+
+                return minCreationTime2.CompareTo(minCreationTime1);
+            });
+            combinedAndSortedTweets = combinedAndSortedTweets.Distinct().ToList();
+
+            return combinedAndSortedTweets;
+        }
+
+        /// <summary>
+        /// Creates a list of TweetModel objects from a list of combined and sorted tweets.
+        /// </summary>
+        /// <param name="combinedAndSortedTweets">A list of combined and sorted tweets to be converted into TweetModel objects.</param>
+        /// <returns>
+        /// A list of TweetModel objects representing the tweets with additional information.
+        /// </returns>
+        private async Task<List<TweetModel>> CreateTweetModels(List<Tweets> combinedAndSortedTweets)
+        {
+            var tweetModels = new List<TweetModel>();
+            foreach (var tweet in combinedAndSortedTweets)
+            {
+                _logger.LogInformation("Processing tweet with ID {TweetId}.", tweet.Id);
+                var tweeter = await _context.Users.FirstOrDefaultAsync(u => u.Id == tweet.TweeterId);
+                tweetModels.Add(new TweetModel()
+                {
+                    Id = tweet.Id,
+                    TimeSincePosted = DateTime.UtcNow - tweet.CreationDateTime,
+                    Content = tweet.Content,
+                    TweeterUserId = tweet.ReTweets.Any() ? tweet.ReTweets.First().OriginalTweet.TweeterId : tweet.TweeterId,
+                    TweeterUserName = tweeter?.UserName,
+                    Likes = tweet.Likes.ToList(),
+                    Comments = tweet.Comments.ToList(),
+                    Retweets = tweet.ReTweets.ToList()
+                });
+                ViewData[tweet.Id.ToString()] = tweeter?.ProfilePictureUrl ?? "\\default\\1.jpg";
+            }
+            return tweetModels;
         }
     }
 }

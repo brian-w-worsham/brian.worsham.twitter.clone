@@ -31,10 +31,15 @@ export class TweetFormComponent {
          'Authorization': `Bearer ${token}`,
         }),
       };
-      this.http.post('https://localhost:7232/api/tweets/create', this.model, httpOptions)
+      this.http
+        .post(
+          'https://localhost:7232/api/tweets/create',
+          this.model,
+          httpOptions
+        )
         .pipe(catchError(this.handleError<any>('postTweet')))
-        .subscribe(
-          (response) => {
+        .subscribe({
+          next: (response) => {
             if (response.success == false) {
               this.successfulTweetPost = false;
               document.querySelector('#tweetPostErrorMessage')!.innerHTML =
@@ -49,13 +54,13 @@ export class TweetFormComponent {
               // window.location.href = '/home';
             }
           },
-          (error) => {
+          error: (error) => {
             this.successfulTweetPost = false;
             document.querySelector('#tweetPostErrorMessage')!.innerHTML =
               error.message;
             console.log(error.message);
-          }
-        );
+          },
+        });
     }
   }
 

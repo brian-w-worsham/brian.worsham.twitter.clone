@@ -4,7 +4,6 @@ import { RouterModule, Routes } from '@angular/router';
 // HeroesComponent, gives the Router somewhere to go once you configure the routes.
 import { UnauthenticatedLayoutComponent } from './unauthenticated-layout/unauthenticated-layout.component';
 import { CounterComponent } from './counter/counter.component';
-import { TweetsfeedComponent } from './tweetsfeed/tweetsfeed.component';
 import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticated-layout.component';
 
 //Routes tell the Router which view to display when a user clicks a link or pastes a URL into the browser address bar.

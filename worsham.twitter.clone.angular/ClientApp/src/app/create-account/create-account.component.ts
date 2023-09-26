@@ -49,8 +49,8 @@ export class CreateAccountComponent implements OnInit {
         headers: headers,
       })
       .pipe(catchError(this.handleError<any>('createUser')))
-      .subscribe(
-        (response) => {
+      .subscribe({
+        next: (response) => {
           if (response.success == false) {
             //update the UI to show the error
             switch (response.errorMessage) {
@@ -94,10 +94,10 @@ export class CreateAccountComponent implements OnInit {
             document.getElementById('btnSignIn')?.click();
           }
         },
-        (error) => {
+        error: (error) => {
           console.log(error.message);
-        }
-      );
+        },
+      });
   }
 
   private handleError<T>(operation = 'operation', result?: T) {
