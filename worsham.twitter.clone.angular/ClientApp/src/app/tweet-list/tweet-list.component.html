@@ -1,39 +1,34 @@
-<!-- @foreach (var tweet in Model.Tweets)
-{ -->
-  <!-- Todo: get the list of tweets from the controller and display them here via for loop -->
-<div class="row g-0">
-  <div class="col col-1">
-    <!-- Todo: figure out where images are supposed to be stored on a Angular application and then point the src attribute to the correct location once the images are moved to the correct location. -->
-    <!-- <img class="user-img rounded-circle" src="/uploads/profile_pictures/default/1.jpg" title="profile picture" priority /> -->
-    <img class="user-img rounded-circle" src="../../assets/images/uploads/profile_pictures/default/1.jpg" title="profile picture" />
-    <!-- <img class="user-img rounded-circle" decoding="async" src="/uploads/profile_pictures/\default\1.jpg" title="profile picture" /> -->
-  </div>
-  <div class="col col-11">
-    <div class="card border-start-0">
-      <div class="card-body">
-        <div class="card-title">
-          <!-- Todo: Add link to user profile and figure out how to pass the user's id to the controller. Route should be like users/profile/followedUserId="@tweet.TweeterUserId" -->
-          <a [routerLink]="['/profile']" asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
-            <span class="fw-bold">TweeterUserName (For example, Gru)</span><span class="text-secondary"> . </span> <span class="text-secondary">time since posted (for example, 8h) </span>
-          </a>
-          <!-- <a asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
+<div *ngIf="tweetsFeed">
+  <div class="row g-0" *ngFor="let tweet of tweetsFeed.Tweets.$values">
+    <div class="col col-1">
+      <img class="user-img rounded-circle" src="../../assets/images/uploads/profile_pictures/{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
+    </div>
+    <div class="col col-11">
+      <div class="card border-start-0">
+        <div class="card-body">
+          <div class="card-title">
+            <!-- Todo: Add link to user profile and figure out how to pass the user's id to the controller. Route should be like users/profile/followedUserId="@tweet.TweeterUserId" -->
+            <a [routerLink]="['/profile']" asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
+              <span class="fw-bold">{{tweet.TweeterUserName}}</span><span class="text-secondary"> . </span> <span class="text-secondary">{{tweet.TimeAgo}} </span>
+            </a>
+            <!-- <a asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
             <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
           </a> -->
-        </div>
-        <p class="card-text">
-          <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
-            <span class="card-text">Tweet content (For example, I fly to the moon. I shrink the moon. I grab the moon. I sit on the toilet... what?)</span>
-            <!-- <span class="card-text">@tweet.Content</span> -->
-          </a>
-        </p>
-        <!-- Todo: need components for Create Comment Modal, and tweet actions row -->
-        <!-- @{
+          </div>
+          <p class="card-text">
+            <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
+              <span class="card-text">{{tweet.Content}}</span>
+            </a>
+          </p>
+          <!-- Todo: need components for Create Comment Modal, and tweet actions row -->
+          <!-- @{
         CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
         { TweetId = tweet.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = tweet.TweeterUserName, TimeAgo = @TimeAgo(tweet.TimeSincePosted), TweetContent = tweet.Content };
         TweetActionsRowModel tweetActionsRowModel = new() { Tweet = tweet, Index = index };
         }
         <partial name="_CreateCommentModal" model="@createCommentModalModel" />
         <partial name="_tweetActionsRow" model="@tweetActionsRowModel" /> -->
+        </div>
       </div>
     </div>
   </div>

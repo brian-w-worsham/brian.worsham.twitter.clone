@@ -8,6 +8,7 @@ namespace worsham.twitter.clone.angular.Models
         IEnumerable<string> ValidationErrors,
         IEnumerable<TweetModel> Tweets,
         PostModel Post,
-        int? currentUserId
+        int? currentUserId,
+        string ErrorNotification
     );
 }

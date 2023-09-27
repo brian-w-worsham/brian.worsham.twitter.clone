@@ -4,7 +4,7 @@ import { NgModel, PatternValidator } from '@angular/forms';
 import { Modal } from 'bootstrap';
 import * as bootstrap from 'bootstrap';
 import { Observable, catchError, of } from 'rxjs';
-import { User } from '../models/user';
+import { Users } from '../models/users';
 
 @Component({
   selector: 'app-create-account',
@@ -13,7 +13,7 @@ import { User } from '../models/user';
 })
 export class CreateAccountComponent implements OnInit {
   modal!: Modal;
-  model = new User('', '', '', 'newuser');
+  model = new Users('', '', '', 'newuser');
   passwordPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,12}$';
   http!: HttpClient;
   private httpOptions = {

@@ -14,7 +14,8 @@ namespace worsham.twitter.clone.angular.Models
         [Display(Name = "Posted")]
         [DataType(DataType.Duration)]
         public TimeSpan TimeSincePosted { get; set; }
-        
+        public string TimeAgo { get; set; }
+
         [Display(Name = "Tweet")]
         [Required]
         [StringLength(280, MinimumLength = 1, ErrorMessage = "Tweet must be between 1 and 280 characters.")]
@@ -28,6 +29,7 @@ namespace worsham.twitter.clone.angular.Models
         [Unicode(false)]
         [Display(Name = "Tweeter")]
         public string? TweeterUserName { get; set; }
+        public string? TweeterProfilePictureUrl { get; set; }
 
         public List<Likes>? Likes { get; set; }
         public List<Comments>? Comments { get; set; }

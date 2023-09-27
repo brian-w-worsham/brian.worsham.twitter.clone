@@ -4,6 +4,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -40,106 +42,6 @@ namespace worsham.twitter.clone.angular.Controllers
             base.OnActionExecuting(context);
         }
 
-        // GET: api/Tweets
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tweets>>> GetTweets()
-        {
-            if (_context.Tweets == null)
-            {
-                return NotFound();
-            }
-            return await _context.Tweets.ToListAsync();
-        }
-
-        // GET: api/Tweets/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Tweets>> GetTweets(int id)
-        {
-            if (_context.Tweets == null)
-            {
-                return NotFound();
-            }
-            var tweets = await _context.Tweets.FindAsync(id);
-
-            if (tweets == null)
-            {
-                return NotFound();
-            }
-
-            return tweets;
-        }
-
-        // PUT: api/Tweets/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTweets(int id, Tweets tweets)
-        {
-            if (id != tweets.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(tweets).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TweetsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Tweets
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Tweets>> PostTweets(Tweets tweets)
-        {
-            if (_context.Tweets == null)
-            {
-                return Problem("Entity set 'TwitterCloneContext.Tweets'  is null.");
-            }
-            _context.Tweets.Add(tweets);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetTweets", new { id = tweets.Id }, tweets);
-        }
-
-        // DELETE: api/Tweets/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTweets(int id)
-        {
-            if (_context.Tweets == null)
-            {
-                return NotFound();
-            }
-            var tweets = await _context.Tweets.FindAsync(id);
-            if (tweets == null)
-            {
-                return NotFound();
-            }
-
-            _context.Tweets.Remove(tweets);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool TweetsExists(int id)
-        {
-            return (_context.Tweets?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
         /// <summary>
         /// Handles the HTTP POST request to create a new tweet.
         /// </summary>
@@ -158,37 +60,17 @@ namespace worsham.twitter.clone.angular.Controllers
                 {
                     // Retrieve the JWT token from the Authorization header
                     var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                    var token = authorizationHeader?.Split(' ').Last();
-
-                    // retrieve SecretKeyForJwtToken from secrets.json
-                    var secretKey = _configuration["SecretKeyForJwtToken"];
-                    var key = secretKey != null ? Encoding.ASCII.GetBytes(secretKey) : throw new ArgumentNullException(nameof(secretKey));
-
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var validationParameters = new TokenValidationParameters
+                    if (authorizationHeader == null)
                     {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
-                    };
-
-                    SecurityToken validatedToken;
-                    var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
-
-                    // Validate the JWT token and extract the user's claims
-                    // var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
-                    // Todo: figure out why it fails to find the NameIdentifier claim
-                    var userIdClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                    // var userIdClaim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-                    int userId = int.Parse(userIdClaim?.Value ?? throw new Exception("userIdClaim is null"));
-                    var user = await _context.Users.FindAsync(userId);
+                        throw new ArgumentNullException(nameof(authorizationHeader));
+                    }
+                    var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
 
                     _ = _context.Add(new Tweets()
                     {
                         Content = postModel.Content,
                         CreationDateTime = DateTime.UtcNow,
-                        TweeterId = userId
+                        TweeterId = user.Id
                     });
                     await _context.SaveChangesAsync();
                     return Json(new { success = true });
@@ -232,22 +114,30 @@ namespace worsham.twitter.clone.angular.Controllers
         }
 
         /// <summary>
-        /// Retrieves and displays the user's feed of tweets and retweets on the Index page.
+        /// Retrieves returns the user's feed of tweets and retweets
         /// </summary>
         /// <returns>
         /// An IActionResult representing the Index page with the user's tweet feed.
         /// </returns>
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        [HttpGet("get_tweets_feed")]
+        public async Task<ActionResult<TweetsFeedViewModel>> GetTweetsFeed()
         {
             try
             {
-                if (_currentUserId == null)
+                // Retrieve the JWT token from the Authorization header
+                var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (authorizationHeader == null)
+                {
+                    throw new ArgumentNullException(nameof(authorizationHeader));
+                }
+                var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+                if (user.Id < 1)
                 {
                     _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
                     return RedirectToAction("Index", "Home");
                 }
-
+                _currentUserId = user.Id;
                 var followedUserIds = GetFollowedUserIds();
 
                 var tweets = await GetTweetsAsync(followedUserIds);
@@ -262,22 +152,30 @@ namespace worsham.twitter.clone.angular.Controllers
 
                 tweetModels.Sort((item1, item2) => item1.TimeSincePosted.CompareTo(item2.TimeSincePosted));
 
+                string errorNotification = TempData["errorNotification"]?.ToString() ?? "";
+
                 var tweetsFeedViewModel = new TweetsFeedViewModel(
                     HasErrors: false,
                     ValidationErrors: Enumerable.Empty<string>(),
                     Tweets: tweetModels,
                     Post: new PostModel(),
-                    currentUserId: _currentUserId
+                    currentUserId: _currentUserId,
+                    ErrorNotification: errorNotification
                 );
 
-                ViewData["page"] = "tweets";
-                ViewData["errorNotification"] = TempData["errorNotification"]?.ToString() ?? "";
+                var json = JsonSerializer.Serialize(tweetsFeedViewModel, new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve
+                });
 
-                return View(tweetsFeedViewModel);
+                return Content(json, "application/json");
+
+                // return tweetsFeedViewModel;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting tweets in the Index method");
+                // todo: refactor this to return an error message
                 return RedirectToAction("Error", "Home");
             }
         }
@@ -393,16 +291,54 @@ namespace worsham.twitter.clone.angular.Controllers
                 {
                     Id = tweet.Id,
                     TimeSincePosted = DateTime.UtcNow - tweet.CreationDateTime,
+                    TimeAgo = GetTimeAgo(DateTime.UtcNow - tweet.CreationDateTime),
                     Content = tweet.Content,
                     TweeterUserId = tweet.ReTweets.Any() ? tweet.ReTweets.First().OriginalTweet.TweeterId : tweet.TweeterId,
                     TweeterUserName = tweeter?.UserName,
                     Likes = tweet.Likes.ToList(),
                     Comments = tweet.Comments.ToList(),
-                    Retweets = tweet.ReTweets.ToList()
+                    Retweets = tweet.ReTweets.ToList(),
+                    TweeterProfilePictureUrl = tweeter?.ProfilePictureUrl ?? "\\default\\1.jpg"
                 });
-                ViewData[tweet.Id.ToString()] = tweeter?.ProfilePictureUrl ?? "\\default\\1.jpg";
             }
             return tweetModels;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the time elapsed since the given TimeSpan.
+        /// </summary>
+        /// <param name="timeSpan">The TimeSpan to convert to a string representation of elapsed time.</param>
+        /// <returns>A string representation of the time elapsed since the given TimeSpan.</returns>
+        private string GetTimeAgo(TimeSpan timeSpan)
+        {
+            if (timeSpan.TotalSeconds < 1)
+            {
+                return "just now";
+            }
+            if (timeSpan.TotalMinutes < 1)
+            {
+                return $"{timeSpan.Seconds}s";
+            }
+            if (timeSpan.TotalHours < 1)
+            {
+                return $"{timeSpan.Minutes}m";
+            }
+            if (timeSpan.TotalDays < 1)
+            {
+                return $"{timeSpan.Hours}h";
+            }
+            if (timeSpan.TotalDays < 30)
+            {
+                return $"{timeSpan.Days}d";
+            }
+            if (timeSpan.TotalDays < 365)
+            {
+                return $"{timeSpan.Days / 30}mo";
+            }
+            else
+            {
+                return $"{timeSpan.Days / 365}y";
+            }
         }
     }
 }
