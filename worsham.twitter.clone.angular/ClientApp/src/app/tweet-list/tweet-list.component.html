@@ -7,27 +7,25 @@
       <div class="card border-start-0">
         <div class="card-body">
           <div class="card-title">
-            <!-- Todo: Add link to user profile and figure out how to pass the user's id to the controller. Route should be like users/profile/followedUserId="@tweet.TweeterUserId" -->
-            <a [routerLink]="['/profile']" asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
+            <!-- Todo: Creeate a userProfile component. Add aroute to user profile and figure out how to pass the user's id to the controller. Route should be like users/profile/UserId="@tweet.TweeterUserId" -->
+            <a [routerLink]="['/profile']">
               <span class="fw-bold">{{tweet.TweeterUserName}}</span><span class="text-secondary"> . </span> <span class="text-secondary">{{tweet.TimeAgo}} </span>
             </a>
-            <!-- <a asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@tweet.TweeterUserId">
-            <span class="fw-bold">@tweet.TweeterUserName</span><span class="text-secondary"> · </span><span class="text-secondary">@TimeAgo(tweet.TimeSincePosted)</span>
-          </a> -->
           </div>
           <p class="card-text">
             <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
               <span class="card-text">{{tweet.Content}}</span>
             </a>
           </p>
-          <!-- Todo: need components for Create Comment Modal, and tweet actions row -->
+          <!-- Todo: Implement Create Comment Modal -->
           <!-- @{
         CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
         { TweetId = tweet.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = tweet.TweeterUserName, TimeAgo = @TimeAgo(tweet.TimeSincePosted), TweetContent = tweet.Content };
         TweetActionsRowModel tweetActionsRowModel = new() { Tweet = tweet, Index = index };
         }
         <partial name="_CreateCommentModal" model="@createCommentModalModel" />
-        <partial name="_tweetActionsRow" model="@tweetActionsRowModel" /> -->
+      -->
+          <app-tweet-actions-row [commentsCount]="tweet.Comments.$values.length" [likesCount]="tweet.Likes.$values.length" [reTweetsCount]="tweet.Retweets.$values.length"></app-tweet-actions-row>
         </div>
       </div>
     </div>

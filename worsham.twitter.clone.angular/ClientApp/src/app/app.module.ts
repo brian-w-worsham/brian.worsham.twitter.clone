@@ -15,6 +15,10 @@ import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticat
 import { SuggestedUsersPanelComponent } from './suggested-users-panel/suggested-users-panel.component';
 import { TweetFormComponent } from './tweet-form/tweet-form.component';
 import { TweetListComponent } from './tweet-list/tweet-list.component';
+import { TweetActionsRowComponent } from './tweet-actions-row/tweet-actions-row.component';
+import { UserProfileComponent } from './user-profile/user-profile.component';
+import { CreateCommentComponent } from './create-comment/create-comment.component';
+import { TweetAndRelatedCommentsComponent } from './tweet-and-related-comments/tweet-and-related-comments.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +33,10 @@ import { TweetListComponent } from './tweet-list/tweet-list.component';
     SuggestedUsersPanelComponent,
     TweetFormComponent,
     TweetListComponent,
+    TweetActionsRowComponent,
+    UserProfileComponent,
+    CreateCommentComponent,
+    TweetAndRelatedCommentsComponent,
   ],
   imports: [
     BrowserModule,
