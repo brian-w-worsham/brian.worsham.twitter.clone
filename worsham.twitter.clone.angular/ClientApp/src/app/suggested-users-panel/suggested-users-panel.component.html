@@ -1,7 +1,12 @@
 <div class="container-fluid float-end authenticated right-panel">
-  <!-- <div id="suggestedUsersCard" class="card text-dark bg-light mb-3 mt-5 d-none"> -->
-  <div id="suggestedUsersCard" class="card text-dark bg-light mb-3 mt-5">
+  <div id="suggestedUsersCard" class="card text-dark bg-light mb-3 mt-5" *ngIf="suggestedUsers && suggestedUsers.length > 0">
     <h2 class="card-header fw-bold">Who to follow</h2>
-    <div id="suggestedUsers"></div>
+    <div id="suggestedUsers">
+      <form class="card-body" method="post" *ngFor="let suggestedUser of suggestedUsers" id="followForm" #followForm="ngForm" (ngSubmit)="postFollow(suggestedUser.id)">
+        <h5 class="card-title d-inline">{{suggestedUser.userName}}</h5>
+        <input type="hidden" name="userId" value="{{suggestedUser.id}}" />
+        <button class="btn btn-primary--dark d-inline rounded-pill float-end" type="submit">Follow</button>
+      </form>
+    </div>
   </div>
 </div>

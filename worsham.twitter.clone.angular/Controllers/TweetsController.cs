@@ -135,6 +135,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 if (user.Id < 1)
                 {
                     _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    // Todo: refactor this to return an error message
                     return RedirectToAction("Index", "Home");
                 }
                 _currentUserId = user.Id;

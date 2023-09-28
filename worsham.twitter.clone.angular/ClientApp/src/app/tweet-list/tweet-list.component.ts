@@ -14,7 +14,6 @@ export class TweetListComponent {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    // Todo: add headers to this request
     const token = localStorage.getItem('jwtToken');
     if (token) {
       const httpOptions = {
