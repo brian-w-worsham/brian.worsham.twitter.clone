@@ -18,7 +18,7 @@
             </a>
           </p>
           <app-create-comment [index]="i" [tweetsFeed]="tweetsFeed"></app-create-comment>
-          <app-tweet-actions-row [commentsCount]="tweet.Comments.$values.length" [likesCount]="tweet.Likes.$values.length" [reTweetsCount]="tweet.Retweets.$values.length" [index]="i"></app-tweet-actions-row>
+          <app-tweet-actions-row [commentsCount]="tweet.Comments.$values.length" [likesCount]="tweet.Likes.$values.length" [reTweetsCount]="tweet.Retweets.$values.length" [tweetsFeed]="tweetsFeed" [index]="i"></app-tweet-actions-row>
         </div>
       </div>
     </div>

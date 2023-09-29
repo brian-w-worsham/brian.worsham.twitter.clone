@@ -39,6 +39,7 @@ export class SuggestedUsersPanelComponent {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       const httpOptions = this.setHttpOptions(token);
+
       this.http
         .post(
           'https://localhost:7232/api/follows/follow_user',
@@ -51,9 +52,8 @@ export class SuggestedUsersPanelComponent {
             if (response.success == false) {
               console.log(response.errorMessage);
             } else {
-              console.info('successfully posted tweet');
+              console.info('successfully followed user');
               console.log(response);
-              //this.getNotFollowedUsers();
               window.location.href = '/home';
             }
           },

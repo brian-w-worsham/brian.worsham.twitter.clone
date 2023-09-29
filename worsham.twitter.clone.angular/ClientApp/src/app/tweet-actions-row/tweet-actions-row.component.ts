@@ -14,32 +14,37 @@ import * as bootstrap from 'bootstrap';
 })
 export class TweetActionsRowComponent {
   model!: TweetActionsRowModel[];
-  tweetsFeed!: TweetsFeedModel;
+  @Input() tweetsFeed!: TweetsFeedModel;
+  @Input() index!: number;
   @Input() commentsCount!: number;
   @Input() likesCount!: number;
   @Input() reTweetsCount!: number;
-  @Input() index: number | undefined;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {}
 
-  postLike(tweetId: number): void {
+  postLike(tweetId: string): void {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       const httpOptions = this.setHttpOptions(token);
+
       this.http
-        .post(
-          'https://localhost:7232/api/likes/like_tweet',
-          tweetId,
-          httpOptions
-        )
-        .pipe(catchError(this.handleError<any>('postTweet')))
+        .post('https://localhost:7232/api/likes/create', parseInt(tweetId), httpOptions)
+        .pipe(catchError(this.handleError<any>('postLike')))
         .subscribe({
-          next: (result) => {
-            console.log(result);
+          next: (response) => {
+            if (response.success == false) {
+              console.log(response.errorMessage);
+            } else {
+              console.info('successfully liked a post');
+              console.log(response);
+              window.location.href = '/home';
+            }
           },
-          error: (error) => console.error(error),
+          error: (error) => {
+            console.log(error.message);
+          },
         });
     }
   }
@@ -54,32 +59,20 @@ export class TweetActionsRowComponent {
           tweetId,
           httpOptions
         )
-        .pipe(catchError(this.handleError<any>('postTweet')))
+        .pipe(catchError(this.handleError<any>('postReTweet')))
         .subscribe({
-          next: (result) => {
-            console.log(result);
+          next: (response) => {
+            if (response.success == false) {
+              console.log(response.errorMessage);
+            } else {
+              console.info('successfully posted reTweet');
+              console.log(response);
+              window.location.href = '/home';
+            }
           },
-          error: (error) => console.error(error),
-        });
-    }
-  }
-
-  postReply(tweetId: number): void {
-    const token = localStorage.getItem('jwtToken');
-    if (token) {
-      const httpOptions = this.setHttpOptions(token);
-      this.http
-        .post(
-          'https://localhost:7232/api/replies/reply_tweet',
-          tweetId,
-          httpOptions
-        )
-        .pipe(catchError(this.handleError<any>('postTweet')))
-        .subscribe({
-          next: (result) => {
-            console.log(result);
+          error: (error) => {
+            console.log(error.message);
           },
-          error: (error) => console.error(error),
         });
     }
   }
