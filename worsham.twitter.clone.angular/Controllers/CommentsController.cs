@@ -2,20 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using worsham.twitter.clone.angular.Models;
 using worsham.twitter.clone.angular.Models.EntityModels;
+using IAuthorizationService = worsham.twitter.clone.angular.Services.IAuthorizationService;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
+    [EnableCors("AllowOrigin")]
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class CommentsController : TwitterController
     {
         private readonly TwitterCloneContext _context;
 
-        public CommentsController(TwitterCloneContext context)
+        public CommentsController(TwitterCloneContext context, ILogger<CommentsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
         }
@@ -113,6 +118,57 @@ namespace worsham.twitter.clone.angular.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Creates a new comment and adds it to the database.
+        /// </summary>
+        /// <param name="comments">The comment to be created.</param>
+        /// <returns>
+        /// If the ModelState is valid, redirects to the "Index" action of the "Tweets" controller.
+        /// If the ModelState is invalid, logs validation errors, and redirects to the "Index"
+        /// action of the "Tweets" controller.
+        /// </returns>
+        /// <remarks>
+        /// If the ModelState is invalid, this method logs validation errors using the provided
+        /// logger.
+        /// </remarks>
+        [HttpPost("create")]
+        // public async Task<IActionResult> Create([Bind("Id,Content,OriginalTweetId,CommenterId")] Comments comments)
+        public async Task<IActionResult> Create([FromBody] Comments comments)
+        {
+            // Retrieve the JWT token from the Authorization header
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (authorizationHeader == null)
+            {
+                throw new ArgumentNullException(nameof(authorizationHeader));
+            }
+            var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+            if (user.Id < 1)
+            {
+                _logger.LogInformation("User is not logged in.");
+                return Json(new CommentResult { Success = false, ErrorMessage = "User is not logged in." });
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(comments);
+                await _context.SaveChangesAsync();
+                return Json(new CommentResult { Success = true });
+            }
+            else
+            {
+                // If ModelState is invalid, log validation errors
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
+                    }
+                }
+                return Json(new CommentResult { Success = false, ErrorMessage = "Comment creation failed due to invalid user input." });
+            }
         }
 
         private bool CommentsExists(int id)

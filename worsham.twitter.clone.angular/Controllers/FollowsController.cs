@@ -20,7 +20,7 @@ namespace worsham.twitter.clone.angular.Controllers
         private readonly TwitterCloneContext _context;
         private int? _currentUserId;
 
-        public FollowsController(TwitterCloneContext context, ILogger<TweetsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
+        public FollowsController(TwitterCloneContext context, ILogger<FollowsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
         }

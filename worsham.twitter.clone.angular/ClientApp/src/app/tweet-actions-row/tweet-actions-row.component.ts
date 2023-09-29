@@ -4,6 +4,8 @@ import { Observable, catchError, of } from 'rxjs';
 import { TweetActionsRowModel } from '../models/tweetActionsRowModel';
 import { TweetsFeedModel } from '../models/tweetsFeedModel';
 import { TweetModel } from '../models/tweetModel';
+import { Modal } from 'bootstrap';
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-tweet-actions-row',
@@ -16,11 +18,11 @@ export class TweetActionsRowComponent {
   @Input() commentsCount!: number;
   @Input() likesCount!: number;
   @Input() reTweetsCount!: number;
+  @Input() index: number | undefined;
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   postLike(tweetId: number): void {
     const token = localStorage.getItem('jwtToken');

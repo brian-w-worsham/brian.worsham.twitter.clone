@@ -4,15 +4,15 @@ import { ReTweets } from './reTweets';
 
 export class TweetModel {
   constructor(
-    public id: number,
-    public timeSincePosted: string,
-    public timeAgo: string,
-    public content: string,
-    public tweeterUserId: number,
-    public tweeterUserName: string,
-    public tweeterProfilePictureUrl: string,
-    public likes: Likes[] | null,
-    public comments: Comments[] | null,
-    public retweets: ReTweets[] | null
+    public Id: number,
+    public TimeSincePosted: string,
+    public TimeAgo: string,
+    public Content: string,
+    public TweeterUserId: number,
+    public TweeterUserName: string,
+    public TweeterProfilePictureUrl: string,
+    public Likes: Likes[] | null,
+    public Comments: Comments[] | null,
+    public Retweets: ReTweets[] | null
   ) {}
 }

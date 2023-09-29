@@ -1,5 +1,5 @@
 <div *ngIf="tweetsFeed">
-  <div class="row g-0" *ngFor="let tweet of tweetsFeed.Tweets.$values">
+  <div class="row g-0" *ngFor="let tweet of tweetsFeed.Tweets.$values; let i = index">
     <div class="col col-1">
       <img class="user-img rounded-circle" src="../../assets/images/uploads/profile_pictures/{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
     </div>
@@ -17,19 +17,10 @@
               <span class="card-text">{{tweet.Content}}</span>
             </a>
           </p>
-          <!-- Todo: Implement Create Comment Modal -->
-          <!-- @{
-        CreateCommentModalModel createCommentModalModel = new CreateCommentModalModel()
-        { TweetId = tweet.Id, Index = index, CurrentUserId = Model.currentUserId, TweeterUserName = tweet.TweeterUserName, TimeAgo = @TimeAgo(tweet.TimeSincePosted), TweetContent = tweet.Content };
-        TweetActionsRowModel tweetActionsRowModel = new() { Tweet = tweet, Index = index };
-        }
-        <partial name="_CreateCommentModal" model="@createCommentModalModel" />
-      -->
-          <app-tweet-actions-row [commentsCount]="tweet.Comments.$values.length" [likesCount]="tweet.Likes.$values.length" [reTweetsCount]="tweet.Retweets.$values.length"></app-tweet-actions-row>
+          <app-create-comment [index]="i" [tweetsFeed]="tweetsFeed"></app-create-comment>
+          <app-tweet-actions-row [commentsCount]="tweet.Comments.$values.length" [likesCount]="tweet.Likes.$values.length" [reTweetsCount]="tweet.Retweets.$values.length" [index]="i"></app-tweet-actions-row>
         </div>
       </div>
     </div>
   </div>
 </div>
-<!-- index++;
-} -->

@@ -21,38 +21,24 @@ export class SuggestedUsersPanelComponent {
   getNotFollowedUsers(): void {
     const token = localStorage.getItem('jwtToken');
     if (token) {
-      const httpOptions = {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        }),
-      };
+      const httpOptions = this.setHttpOptions(token);
 
       this.http
         .get('https://localhost:7232/api/follows/notfollowed', httpOptions)
-        .pipe(catchError(this.handleError<any>('postTweet')))
+        .pipe(catchError(this.handleError<any>('getNotFollowedUsers')))
         .subscribe({
           next: (result) => {
             this.suggestedUsers = result;
-            console.log(this.suggestedUsers);
-            this.suggestedUsers.forEach((user) => {
-              console.log(user.userName);
-            });
           },
           error: (error) => console.error(error),
         });
     }
   }
 
-  postFollow(userId: number): void{
+  postFollow(userId: number): void {
     const token = localStorage.getItem('jwtToken');
     if (token) {
-      const httpOptions = {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        }),
-      };
+      const httpOptions = this.setHttpOptions(token);
       this.http
         .post(
           'https://localhost:7232/api/follows/follow_user',
@@ -84,5 +70,15 @@ export class SuggestedUsersPanelComponent {
       //debugger;
       return of(result as T);
     };
+  }
+
+  private setHttpOptions(token: string) {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      }),
+    };
+    return httpOptions;
   }
 }

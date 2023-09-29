@@ -1,1 +1,41 @@
-<p>create-comment works!</p>
+<div class="modal fade" id="createCommentModal_{{index}}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-start border-bottom-0">
+        <button type="button" class="btn-close mx-0" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-0">
+          <div class="col col-1">
+            <img class="user-img rounded-circle" decoding="async" [src]="'../../assets/images/uploads/profile_pictures/' + tweetsFeed.Tweets.$values[index].TweeterProfilePictureUrl" asp-append-version="true" title="profile picture" />
+          </div>
+          <div class="col col-11">
+            <div class="card">
+              <div class="card-body">
+                <div class="card-title">
+                  <span class="fw-bold">{{tweetsFeed.Tweets.$values[index].TweeterUserName}}</span><span class="text-secondary"> · </span><span class="text-secondary">{{tweetsFeed.Tweets.$values[index].TimeAgo}}</span>
+                </div>
+                <p class="card-text">{{tweetsFeed.Tweets.$values[index].Content}}</p>
+                <p class="text-secondary fs-6">Replying to {{tweetsFeed.Tweets.$values[index].TweeterUserName}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="container">
+        <div class="row">
+          <form method="post" id="createCommentForm" #createCommentForm="ngForm" (ngSubmit)="postComment(originalTweetId.value, currentUserId.value, postCommentContent.value)"  class="col mx-1">
+            <div [hidden]="(successfulCommentPost)" id="tweetPostErrorMessage" class="alert alert-danger"></div>
+            <input type="hidden" name="OriginalTweetId" #originalTweetId value="{{tweetsFeed.Tweets.$values[index].Id}}" />
+            <input type="hidden" name="CommenterId" #currentUserId value="{{tweetsFeed.currentUserId}}" />
+            <textarea [id]="'commentsContent_' + index" name="Content" class="form-control" rows="3" placeholder="Post your reply!" #postCommentContent ></textarea>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary m-2 rounded-pill" [disabled]="!createCommentForm.form.valid">Reply</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

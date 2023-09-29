@@ -32,7 +32,6 @@ export class TweetListComponent {
         .subscribe({
           next: (result) => {
             this.tweetsFeed = result;
-            console.log(this.tweetsFeed.Tweets);
           },
           error: (error) => console.error(error),
         });
