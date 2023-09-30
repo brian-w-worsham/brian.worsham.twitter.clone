@@ -1,0 +1,34 @@
+button.btn-link.icon:focus, button.btn-link.icon:hover {
+  opacity: 0.5;
+  border-radius: 50%;
+  height: 2.1rem;
+  width: 2.1rem;
+}
+
+
+button.btn-link.icon-like:focus, button.btn-link.icon-like:hover {
+  color: lightpink;
+  background-color: lightpink;
+}
+
+button.btn-link.icon-like path:focus, button.btn-link.icon-like path:hover {
+  fill: pink;
+}
+
+button.btn-link.icon-retweet:focus, button.btn-link.icon-retweet:hover {
+  color: lawngreen;
+  background-color: lawngreen;
+}
+
+button.btn-link.icon-retweet path:focus, button.btn-link.icon-retweet path:hover {
+  fill: lawngreen;
+}
+
+button.btn-link.icon-comment:focus, button.btn-link.icon-comment:hover {
+  color: lightblue;
+  background-color: lightblue;
+}
+
+button.btn-link.icon-comment path:focus, button.btn-link.icon-comment path:hover {
+  fill: lightblue;
+}

@@ -149,6 +149,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     _logger.LogInformation("User is not logged in.");
                     return Json(new LikeResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
+
                 if (ModelState.IsValid && tweetId > 0)
                 {
                     // Get the authenticated user's ID

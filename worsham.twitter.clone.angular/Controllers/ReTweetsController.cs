@@ -5,17 +5,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using worsham.twitter.clone.angular.Models;
 using worsham.twitter.clone.angular.Models.EntityModels;
+using worsham.twitter.clone.angular.Services;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReTweetsController : ControllerBase
+    public class ReTweetsController : TwitterController
     {
         private readonly TwitterCloneContext _context;
 
-        public ReTweetsController(TwitterCloneContext context)
+        public ReTweetsController(TwitterCloneContext context, ILogger<ReTweetsController> logger, IAuthorizationService authorizationService) : base(logger, authorizationService)
         {
             _context = context;
         }
@@ -113,6 +115,85 @@ namespace worsham.twitter.clone.angular.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Handles the creation or removal of retweets for a tweet by the authenticated user.
+        /// </summary>
+        /// <param name="tweetId">
+        /// The ID of the tweet for which the retweet is being created or removed.
+        /// </param>
+        /// <returns>Redirects to the Tweets Index page after the retweet operation.</returns>
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] int tweetId)
+        {
+            try
+            {
+                // Retrieve the JWT token from the Authorization header
+                var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (authorizationHeader == null)
+                {
+                    throw new ArgumentNullException(nameof(authorizationHeader));
+                }
+                var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+                if (user.Id < 1)
+                {
+                    _logger.LogInformation("User is not logged in.");
+                    return Json(new RetweetResult { Success = false, ErrorMessage = "User is not logged in." });
+                }
+
+                if (ModelState.IsValid && tweetId > 0)
+                {
+                    // Get the authenticated user's ID
+                    int? currentUserId = user.Id;
+                    _logger.LogInformation(message: "User ID retrieved from session: {UserId}", currentUserId);
+
+                    // Check if the user has already retweeted the tweet
+                    bool userHasRetweetedTweet = _context.ReTweets.Any(predicate: retweet => retweet.RetweeterId == currentUserId && retweet.OriginalTweetId == tweetId);
+                    _logger.LogInformation("Retweet operation: {Operation}", userHasRetweetedTweet ? "Remove" : "Add");
+
+                    if (userHasRetweetedTweet)
+                    {
+                        // remove the retweet from the database
+                        var retweetToRemove = _context.ReTweets.FirstOrDefault(predicate: retweet => retweet.RetweeterId == currentUserId && retweet.OriginalTweetId == tweetId);
+                        _ = _context?.Remove(entity: retweetToRemove);
+                    }
+                    else
+                    {
+                        //Create a new ReTweets instance with the correct user ID and retweeted tweet ID
+                        ReTweets? retweet = new ReTweets
+                        {
+                            OriginalTweetId = tweetId,
+                            RetweeterId = (int)currentUserId,
+                            ReTweetCreationDateTime = DateTime.UtcNow
+                        };
+
+                        // Add the new retweet to the database
+                        _ = _context?.Add(entity: retweet);
+                    }
+
+                    // Save the changes to the database
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Retweet {Operation} successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", userHasRetweetedTweet ? "removed" : "created", tweetId, currentUserId);
+                    return Json(new RetweetResult { Success = true });
+                }
+                else
+                {
+                    _logger.LogWarning("Model state is invalid. Validation errors: {ValidationErrors}", ModelState.Values.SelectMany(v => v.Errors));
+                    return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+                }
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Error updating the database while creating a ReTweet in the Create method");
+                return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting creating a ReTweet in the Create method");
+                return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+            }
         }
 
         private bool ReTweetsExists(int id)

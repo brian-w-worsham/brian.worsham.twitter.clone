@@ -20,9 +20,7 @@ export class TweetActionsRowComponent {
   @Input() likesCount!: number;
   @Input() reTweetsCount!: number;
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {}
+  constructor(private http: HttpClient) { }
 
   postLike(tweetId: string): void {
     const token = localStorage.getItem('jwtToken');
@@ -49,16 +47,14 @@ export class TweetActionsRowComponent {
     }
   }
 
-  postRetweet(tweetId: number): void {
+  postRetweet(tweetId: string): void {
     const token = localStorage.getItem('jwtToken');
     if (token) {
       const httpOptions = this.setHttpOptions(token);
+
       this.http
         .post(
-          'https://localhost:7232/api/retweets/retweet_tweet',
-          tweetId,
-          httpOptions
-        )
+          'https://localhost:7232/api/retweets/create', parseInt(tweetId), httpOptions)
         .pipe(catchError(this.handleError<any>('postReTweet')))
         .subscribe({
           next: (response) => {
