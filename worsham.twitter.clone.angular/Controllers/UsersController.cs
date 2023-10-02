@@ -30,17 +30,21 @@ namespace worsham.twitter.clone.angular.Controllers
         private readonly TwitterCloneContext _context;
         private readonly IAuthenticationService _authenticationService;
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public UsersController(
             TwitterCloneContext context,
             IAuthenticationService authenticationService,
             ILogger<UsersController> logger,
-            IAuthorizationService authorizationService, IConfiguration configuration
+            IAuthorizationService authorizationService,
+            IConfiguration configuration,
+            IWebHostEnvironment webHostEnvironment
         ) : base(logger, authorizationService)
         {
             _context = context;
             _authenticationService = authenticationService;
             _configuration = configuration;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: api/Users
@@ -253,9 +257,9 @@ namespace worsham.twitter.clone.angular.Controllers
             try
             {
                 var user = await _authenticationService.AuthenticateUser(
-                    loginDto.UserName,
-                    loginDto.Password
-                );
+                     loginDto.UserName,
+                     loginDto.Password
+                 );
 
                 // Authentication successful - Generate JWT token
                 // retrieve SecretKeyForJwtToken from secrets.json
@@ -325,7 +329,7 @@ namespace worsham.twitter.clone.angular.Controllers
         /// </param>
         /// <returns>An <see cref="IActionResult"/> representing the view of the user's profile.</returns>
         [HttpGet("get_profile/{followedUserId?}")]
-        public async Task<ActionResult<UserProfileModel>> ProfileAsync(int? followedUserId)
+        public async Task<ActionResult<UserProfileModel>> GetProfileAsync(int? followedUserId)
         {
             try
             {
@@ -631,6 +635,98 @@ namespace worsham.twitter.clone.angular.Controllers
         {
             return ex.InnerException?.Message.Contains("IX_Users_UserName") == true
                 || ex.Message.Contains("IX_Users_UserName");
+        }
+
+        [HttpPut("edit")]
+        // public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
+        public async Task<IActionResult> Edit([FromBody] UserProfileModel userProfile)
+        {
+
+            // Retrieve the JWT token from the Authorization header
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (authorizationHeader == null)
+            {
+                throw new ArgumentNullException(nameof(authorizationHeader));
+            }
+            var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+            if (user.Id != userProfile.UserId)
+            {
+                return NotFound();
+            }
+            bool didProfilePictureUploadSucceed = false;
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    string fileName = null;
+                    if (userProfile.FormFile != null)
+                    {
+                        string wwwRootPath = _webHostEnvironment.WebRootPath;
+                        Guid guid = Guid.NewGuid();
+                        fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
+                        string extension = Path.GetExtension(userProfile.FormFile.FileName);
+                        fileName = fileName + extension;
+                        // worsham.twitter.clone.angular\ClientApp\src\assets\images\uploads\profile_pictures
+                        string path = Path.Combine("/ClientApp/src/assets/images/uploads/profile_pictures", fileName);
+
+                        using (var fileStream = new FileStream(path, FileMode.Create))
+                        {
+                            await userProfile.FormFile.CopyToAsync(fileStream);
+                        }
+
+                        base._logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
+                        // Mark profile picture upload as successful
+                        didProfilePictureUploadSucceed = true;
+                    }
+
+                    _context.Update(entity: new Users()
+                    {
+                        Id = userProfile.UserId,
+                        UserName = userProfile.UserName,
+                        Bio = userProfile.Bio,
+                        ProfilePictureUrl = fileName ?? _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.ProfilePictureUrl).FirstOrDefault(),
+                        Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
+                        Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault(),
+                        UserRole = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.UserRole).FirstOrDefault(),
+                    });
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("User profile updated for user with ID: {UserId}", userProfile.UserId);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    base._logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
+
+                    if (!UsersExists(id: userProfile.UserId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Concurrency exception while updating profile for user with ID: " + userProfile.UserId.ToString() });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    base._logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while editing the user profile for user with ID: " + userProfile.UserId.ToString() });
+                }
+
+                if (!didProfilePictureUploadSucceed)
+                {
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred. The user's profile picture upload failed." });
+                }
+                else
+                {
+                    ViewData["didProfilePictureUploadSucceed"] = true;
+                    return Json(new TwitterApiActionResult { Success = true });
+                }
+
+                base._logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
+
+            }
+            // return View(model: userProfile);
+            return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Invalid input data." });
         }
     }
 }

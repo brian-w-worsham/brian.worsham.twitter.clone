@@ -1,0 +1,32 @@
+<!-- @model UserProfileModel; -->
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form  method="post" class="modal-content" enctype="multipart/form-data">
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+      <input type="hidden" asp-for="UserId" />
+      <div class="modal-header d-flex justify-content-start border-bottom-0">
+        <button type="button" class="btn-close m-0 me-4" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title fw-bold" id="modalLabel">Edit profile</h5>
+        <button id="btnSave" type="submit" class="btn btn-primary--dark rounded-pill ms-auto">Save</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="inputUserName" placeholder="Name" asp-for="UserName">
+          <label for="inputUserName">Name</label>
+          <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+        <div class="form-floating mb-3">
+          <textarea id="textAreaBio" class="form-control" placeholder="Bio" asp-for="Bio" rows="3"></textarea>
+          <label for="textAreaBio">Bio</label>
+          <span asp-validation-for="Bio" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+          <label for="inputPhoto" class="form-label">Add profile photo</label>
+          <input asp-for="FormFile" accept="image/*" class="form-control" type="file" id="inputPhoto" value="@Model.ProfilePictureUrl">
+          <span asp-validation-for="FormFile" class="text-danger"></span>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
