@@ -205,7 +205,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 if (user.Id < 1)
                 {
                     _logger.LogInformation("User is not logged in.");
-                    return Json(new FollowResult { Success = false, ErrorMessage = "User is not logged in." });
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
 
                 _currentUserId = user.Id;
@@ -215,15 +215,15 @@ namespace worsham.twitter.clone.angular.Controllers
                     _ = _context.Add(new Follows() { FollowedUserId = userId, FollowerUserId = (int)_currentUserId });
                     await _context.SaveChangesAsync();
                     _logger.LogInformation($"Follow created: FollowerUserId = {_currentUserId}, FollowedUserId = {userId}");
-                    return Json(new FollowResult { Success = true });
+                    return Json(new TwitterApiActionResult { Success = true });
                 }
                 _logger.LogError("ModelState is invalid");
-                return Json(new FollowResult { Success = false, ErrorMessage = "An error occurred while attempting to follow. Invalid input data." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while attempting to follow. Invalid input data." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating follow");
-                return Json(new FollowResult { Success = false, ErrorMessage = "An error occurred while attempting to follow." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while attempting to follow." });
             }
         }
 

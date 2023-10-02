@@ -147,7 +147,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 if (user.Id < 1)
                 {
                     _logger.LogInformation("User is not logged in.");
-                    return Json(new LikeResult { Success = false, ErrorMessage = "User is not logged in." });
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
 
                 if (ModelState.IsValid && tweetId > 0)
@@ -185,22 +185,22 @@ namespace worsham.twitter.clone.angular.Controllers
 
                     _logger.LogInformation(message: "Like created successfully for Tweet ID: {TweetId}, Liked by User ID: {UserId}", tweetId, userThatLikedTweetId);
 
-                    return Json(new LikeResult { Success = true });
+                    return Json(new TwitterApiActionResult { Success = true });
                 }
                 else
                 {
-                    return Json(new LikeResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
                 }
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a Like in the Create method");
-                return Json(new LikeResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting creating a Like in the Create method");
-                return Json(new LikeResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while saving the like for the tweet." });
             }
         }
 

@@ -18,9 +18,16 @@ namespace worsham.twitter.clone.angular.Models
         public IFormFile? FormFile { get; set; }
         public int? FollowersCount { get; set; }
         public int? FollowingCount { get; set; }
-        public List<Tweets>? Tweets { get; set; }
-        public List<Tweets>? LikedTweets { get; set; }
-        public List<Tweets>? ReTweets { get; set; }
+        public bool? UserIsViewingOwnProfile { get; set; }
+        public bool? CurrentUserIsFollowing { get; set; }
+        public int? FollowId { get; set; }
+        public string? ErrorNotification { get; set; }
+        public List<ProfilePictureUrlModel>? TweeterProfilePictureUrls { get; set; }
+        public List<ProfilePictureUrlModel>? RetweeterProfilePictureUrls { get; set; }
+        public List<ProfilePictureUrlModel>? LikedProfilePictureUrls { get; set; }
+        public List<TweetModel>? Tweets { get; set; }
+        public List<TweetModel>? LikedTweets { get; set; }
+        public List<TweetModel>? ReTweets { get; set; }
         public List<RetweetedTweetInfo>? RetweetedTweets { get; set; }
         public List<LikedTweetInfo>? LikedTweetInfos { get; set; }
     }

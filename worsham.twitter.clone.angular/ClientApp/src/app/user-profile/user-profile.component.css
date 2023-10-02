@@ -1,0 +1,145 @@
+body {
+  font-family: "TwitterChirp",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+
+div.container-fluid.float-start.content {
+  border: none;
+  background-color: rgba(255,255,255,1.00);
+  height: 100vh;
+  width: 33.3333%;
+}
+
+main {
+  height: 100vh;
+}
+
+h1 .logo {
+  height: 2rem;
+}
+
+h2 {
+  font-size: 1.333rem;
+  font-weight: 700;
+}
+
+.content-scrollable {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 95vh;
+}
+
+  /* Hide the scrollbar */
+  .content-scrollable::-webkit-scrollbar {
+    width: 0px; /* Set the width of the scrollbar */
+    background-color: transparent; /* Make the scrollbar background transparent */
+  }
+
+  /* Customize the scrollbar thumb */
+  .content-scrollable::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2); /* Set the color of the scrollbar thumb */
+    border-radius: 4px; /* Add some border-radius for a rounded appearance */
+  }
+
+.post-text {
+  font-size: 1.333rem;
+  font-weight: 400;
+}
+
+input.post {
+  background-color: rgb(29, 155, 240);
+  color: rgb(255, 255, 255);
+  border-color: rgba(0,0,0,0);
+}
+
+.authenticated .user-img {
+  height: 3rem;
+  width: 3rem;
+  border-color: rgba(255,255,255,1.00);
+  border-style: solid;
+  border-width: .2rem;
+  padding: .5rem;
+}
+
+.authenticated .card {
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgb(239, 243, 244);
+  background-color: rgba(255,255,255,1.00);
+}
+
+.authenticated .card-body button.btn-link.icon:focus, .authenticated .card-body button.btn-link.icon:hover {
+  opacity: 0.5;
+  border-radius: 50%;
+  height: 2.1rem;
+  width: 2.1rem;
+}
+
+
+.authenticated .card-body button.btn-link.icon-like:focus, .authenticated .card-body button.btn-link.icon-like:hover {
+  color: lightpink;
+  background-color: lightpink;
+}
+
+.authenticated .card-body button.btn-link.icon-like path:focus, .authenticated .card-body button.btn-link.icon-like path:hover {
+  fill: pink;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet:focus, .authenticated .card-body button.btn-link.icon-retweet:hover {
+  color: lawngreen;
+  background-color: lawngreen;
+}
+
+.authenticated .card-body button.btn-link.icon-retweet path:focus, .authenticated .card-body button.btn-link.icon-retweet path:hover {
+  fill: lawngreen;
+}
+
+.authenticated .card-body button.btn-link.icon-comment:focus, .authenticated .card-body button.btn-link.icon-comment:hover {
+  color: lightblue;
+  background-color: lightblue;
+}
+
+.authenticated .card-body button.btn-link.icon-comment path:focus, .authenticated .card-body button.btn-link.icon-comment path:hover {
+  fill: lightblue;
+}
+
+.authenticated .card-text, .authenticated .card-title a, .authenticated a.go-back {
+  color: inherit;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+}
+
+#profile img.profile-backdrop {
+  height: 12rem;
+  background-color: #d0d9de;
+  background-image: linear-gradient(to right, rgba(255,255,255,0.00), rgba(255,255,255,1.00));
+  border: none;
+}
+
+#profile img.profile-picture {
+  height: 6rem;
+  width: 6rem;
+  border-color: rgba(255,255,255,1.00);
+  border-style: solid;
+  border-width: .2rem;
+  position: absolute;
+  top: 9rem;
+  left: 1rem;
+}
+
+#profile .profile-btn {
+  width: -moz-fit-content;
+  width: fit-content;
+  position: absolute;
+  right: 1rem;
+  top: 13rem;
+  border-color: #d0d9de;
+  background-color: rgba(255,255,255,1.00);
+}
+
+  #profile .profile-btn:hover {
+    background-color: rgba(29, 155, 240, 0.1);
+  }
+
+textarea#textAreaBio {
+  min-height: 6rem;
+}

@@ -140,7 +140,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 if (user.Id < 1)
                 {
                     _logger.LogInformation("User is not logged in.");
-                    return Json(new RetweetResult { Success = false, ErrorMessage = "User is not logged in." });
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
 
                 if (ModelState.IsValid && tweetId > 0)
@@ -176,23 +176,23 @@ namespace worsham.twitter.clone.angular.Controllers
                     // Save the changes to the database
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("Retweet {Operation} successfully for Tweet ID: {TweetId}, Retweeted by User ID: {UserId}", userHasRetweetedTweet ? "removed" : "created", tweetId, currentUserId);
-                    return Json(new RetweetResult { Success = true });
+                    return Json(new TwitterApiActionResult { Success = true });
                 }
                 else
                 {
                     _logger.LogWarning("Model state is invalid. Validation errors: {ValidationErrors}", ModelState.Values.SelectMany(v => v.Errors));
-                    return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
                 }
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Error updating the database while creating a ReTweet in the Create method");
-                return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting creating a ReTweet in the Create method");
-                return Json(new RetweetResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while processing the re-tweet" });
             }
         }
 

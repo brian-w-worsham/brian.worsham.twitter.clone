@@ -148,14 +148,14 @@ namespace worsham.twitter.clone.angular.Controllers
             if (user.Id < 1)
             {
                 _logger.LogInformation("User is not logged in.");
-                return Json(new CommentResult { Success = false, ErrorMessage = "User is not logged in." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
             }
 
             if (ModelState.IsValid)
             {
                 _context.Add(comments);
                 await _context.SaveChangesAsync();
-                return Json(new CommentResult { Success = true });
+                return Json(new TwitterApiActionResult { Success = true });
             }
             else
             {
@@ -167,7 +167,7 @@ namespace worsham.twitter.clone.angular.Controllers
                         _logger.LogError("Model Error: {ErrorMessage}", error.ErrorMessage);
                     }
                 }
-                return Json(new CommentResult { Success = false, ErrorMessage = "Comment creation failed due to invalid user input." });
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Comment creation failed due to invalid user input." });
             }
         }
 
