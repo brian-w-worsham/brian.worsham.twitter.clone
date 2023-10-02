@@ -1,17 +1,11 @@
 import { NgModule } from '@angular/core';
-// imports RouterModule and Routes so the application can have routing capability
 import { RouterModule, Routes } from '@angular/router';
-// HeroesComponent, gives the Router somewhere to go once you configure the routes.
 import { UnauthenticatedLayoutComponent } from './unauthenticated-layout/unauthenticated-layout.component';
 import { CounterComponent } from './counter/counter.component';
 import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticated-layout.component';
+import { UserProfileComponent } from './user-profile/user-profile.component';
 
-//Routes tell the Router which view to display when a user clicks a link or pastes a URL into the browser address bar.
 const routes: Routes = [
-  //A typical Angular Route has two properties:
-  //path:	A string that matches the URL in the browser address bar.
-  //component:	The component that the router should create when navigating to this route.
-  /*When the application starts, the browser's address bar points to the web site's root. That doesn't match any existing route so the router doesn't navigate anywhere. The space below the <router-outlet> is blank. To make the application navigate to the dashboard automatically, add the following route to the routes array.*/
   {
     path: '',
     component: UnauthenticatedLayoutComponent,
@@ -20,9 +14,8 @@ const routes: Routes = [
   },
   { path: 'home', component: AuthenticatedLayoutComponent, title: 'Home / X' },
   { path: 'counter', component: CounterComponent, title: 'Counter App' },
-  //The colon : character in the path indicates that :id is a placeholder for a specific hero id.
-  // { path: 'detail/:id', component: HeroDetailComponent },
-  // { path: 'heroes', component: HeroesComponent },
+  { path: 'profile', component: UserProfileComponent, title: 'Profile' },
+  { path: 'profile/:id?', component: UserProfileComponent, title: 'Profile' }
 ];
 
 //The @NgModule metadata initializes the router and starts it listening for browser location changes.

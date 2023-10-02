@@ -164,20 +164,20 @@ namespace worsham.twitter.clone.angular.Controllers
                     ErrorNotification: errorNotification
                 );
 
-                var json = JsonSerializer.Serialize(tweetsFeedViewModel, new JsonSerializerOptions
+                var json = JsonSerializer.Serialize<TweetsFeedViewModel>(tweetsFeedViewModel, new JsonSerializerOptions
                 {
-                    ReferenceHandler = ReferenceHandler.Preserve
+                    ReferenceHandler = ReferenceHandler.Preserve,
+                    IncludeFields = true,
+                    WriteIndented = true,
+                    MaxDepth = 128
                 });
 
                 return Content(json, "application/json");
-
-                // return tweetsFeedViewModel;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting tweets in the Index method");
-                // todo: refactor this to return an error message
-                return RedirectToAction("Error", "Home");
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while retrieving your tweets." });
             }
         }
 

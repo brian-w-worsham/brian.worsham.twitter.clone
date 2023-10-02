@@ -1,6 +1,6 @@
 ﻿namespace worsham.twitter.clone.angular.Models
 {
-    public class RetweetResult
+    public class TwitterApiActionResult
     {
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }

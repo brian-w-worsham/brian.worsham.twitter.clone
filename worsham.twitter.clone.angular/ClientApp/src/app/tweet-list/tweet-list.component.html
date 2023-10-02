@@ -7,12 +7,12 @@
       <div class="card border-start-0">
         <div class="card-body">
           <div class="card-title">
-            <!-- Todo: Creeate a userProfile component. Add aroute to user profile and figure out how to pass the user's id to the controller. Route should be like users/profile/UserId="@tweet.TweeterUserId" -->
-            <a [routerLink]="['/profile']">
-              <span class="fw-bold">{{tweet.TweeterUserName}}</span><span class="text-secondary"> . </span> <span class="text-secondary">{{tweet.TimeAgo}} </span>
-            </a>
+              <a [routerLink]="['/profile', tweet.TweeterUserId]">
+                  <span class="fw-bold">{{tweet.TweeterUserName}}</span><span class="text-secondary"> . </span> <span class="text-secondary">{{tweet.TimeAgo}} </span>
+              </a>
           </div>
           <p class="card-text">
+              <!-- Todo: enable navigation to tweet and related comments here -->
             <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
               <span class="card-text">{{tweet.Content}}</span>
             </a>

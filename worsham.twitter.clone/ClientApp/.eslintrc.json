@@ -1,0 +1,57 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:angular/johnpapa"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "angular"
+  ],
+  "rules": {
+    "@typescript-eslint/no-var-requires": "off",
+    "angular/di-unused": 1,
+    "angular/module-setter": 1,
+    "angular/one-dependency-per-line": 1,
+    "angular/ordered-dependencies": 1,
+    "angular/controller-as-vm": 1,
+    "semi": [ "error", "always" ],
+    "quotes": [ "error", "double" ],
+    "indent": [ "error", 2 ],
+    "linebreak-style": [ "error", "windows" ],
+    "camelcase": "error",
+    "comma-dangle": [ "error", "never" ],
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 2,
+        "maxEOF": 0
+      }
+    ],
+    "no-trailing-spaces": "error",
+    "arrow-parens": [ "error", "always" ],
+    "arrow-spacing": "error",
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "never",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "no-console": "off"
+  },
+  "overrides": [
+    {
+      "files": [ "*.js", "*.jsx" ],
+      "rules": {
+        "no-unused-vars": "error"
+      }
+    }
+  ]
+}
