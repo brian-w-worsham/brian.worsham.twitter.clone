@@ -1,7 +1,7 @@
 <app-nav-menu></app-nav-menu>
 
 <div class="container-fluid float-start content authenticated">
-    <!-- <partial name="_EditProfileModal" /> -->
+    <app-edit-proile></app-edit-proile>
     <main role="main">
         <div id="profile">
             <div *ngIf="userProfileModel?.ErrorNotification" class="alert alert-danger alert-dismissible mt-5" role="alert">
@@ -13,7 +13,7 @@
             <h2 class="mt-3 mb-0">{{userProfileModel?.UserName}}</h2>
             <div class="text-secondary small">{{userProfileModel?.Tweets?.$values?.length}} posts</div>
             <div class="card">
-                <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop" />
+                <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop" title="backdrop" />
                 <img id="profilePicture" class="profile-picture rounded-circle" src="../../assets/images/uploads/profile_pictures/{{userProfileModel?.ProfilePictureUrl}}" title="profile picture" />
                 <button *ngIf="userProfileModel?.UserIsViewingOwnProfile; else elseBlock" id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal" autocomplete="off">Edit profile</button>
                 <ng-template #elseBlock>

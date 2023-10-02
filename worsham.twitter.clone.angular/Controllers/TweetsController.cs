@@ -73,7 +73,8 @@ namespace worsham.twitter.clone.angular.Controllers
                         TweeterId = user.Id
                     });
                     await _context.SaveChangesAsync();
-                    return Json(new { success = true });
+                    // return Ok();
+                    return Json(new TwitterApiActionResult { Success = true });
                 }
                 else
                 {
@@ -86,13 +87,7 @@ namespace worsham.twitter.clone.angular.Controllers
                         }
                     }
 
-                    return Json(
-                            new
-                            {
-                                success = false,
-                                errorMessage = "An error occurred, and we were not able to process your tweet."
-                            }
-                        );
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred, and we were not able to process your tweet." });
                 }
             }
             catch (SecurityTokenException ex)
@@ -103,13 +98,7 @@ namespace worsham.twitter.clone.angular.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while creating a new tweet.");
-                return Json(
-                            new
-                            {
-                                success = false,
-                                errorMessage = "An error occurred, and we were not able to process your tweet."
-                            }
-                        );
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred, and we were not able to process your tweet." });
             }
         }
 
