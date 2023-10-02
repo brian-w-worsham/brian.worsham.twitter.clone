@@ -2,17 +2,6 @@
 
 <div class="container-fluid float-start content authenticated">
   <main role="main">
-    <!--
-            @{
-            var DictOfTweeterProfilePictureNames = ViewData["TweeterProfilePictureUrls"] as Dictionary<int, string>
-                ;
-                var DictOfRetweeterProfilePictureNames = ViewData["RetweeterProfilePictureUrls"] as Dictionary<int, string>
-                    ;
-                    var DictOfLikedProfilePictureUrls = ViewData["LikedProfilePictureUrls"] as Dictionary<int, string>;
-
-                        } -->
-    <!-- <partial name="_EditProfileModal" /> -->
-
     <div id="profile">
       <div *ngIf="userProfileModel?.ErrorNotification" class="alert alert-danger alert-dismissible mt-5" role="alert">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
@@ -81,7 +70,6 @@
             </div>
           </div>
         </div>
-
 
         <div id="panelReTweets" #panelReTweets class="d-none">
             <div class="row" *ngFor="let retweet of userProfileModel?.RetweetedTweets?.$values">
