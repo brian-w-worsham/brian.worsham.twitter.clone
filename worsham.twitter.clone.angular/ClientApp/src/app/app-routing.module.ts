@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { UnauthenticatedLayoutComponent } from './unauthenticated-layout/unauthenticated-layout.component';
-import { CounterComponent } from './counter/counter.component';
 import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticated-layout.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 
@@ -13,7 +12,6 @@ const routes: Routes = [
     title: "Twitter. it's what's happening / X",
   },
   { path: 'home', component: AuthenticatedLayoutComponent, title: 'Home / X' },
-  { path: 'counter', component: CounterComponent, title: 'Counter App' },
   { path: 'profile', component: UserProfileComponent, title: 'Profile' },
   { path: 'profile/:id?', component: UserProfileComponent, title: 'Profile' }
 ];
