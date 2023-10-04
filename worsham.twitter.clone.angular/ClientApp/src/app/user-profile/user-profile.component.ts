@@ -13,7 +13,7 @@ import * as bootstrap from 'bootstrap';
 })
 export class UserProfileComponent implements OnInit {
   TweeterUserId: string | undefined;
-  userProfileModel: UserProfileModel | undefined;
+  userProfileModel!: UserProfileModel;
   btnTweets: any;
   btnReTweets: any;
   btnLikes: any;

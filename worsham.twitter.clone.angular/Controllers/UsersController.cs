@@ -19,6 +19,7 @@ using IAuthorizationService = worsham.twitter.clone.angular.Services.IAuthorizat
 using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
@@ -637,9 +638,55 @@ namespace worsham.twitter.clone.angular.Controllers
                 || ex.Message.Contains("IX_Users_UserName");
         }
 
-        [HttpPut("edit")]
+        [HttpPost("upload"), DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload()
+        {
+            // Retrieve the JWT token from the Authorization header
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (authorizationHeader == null)
+            {
+                throw new ArgumentNullException(nameof(authorizationHeader));
+            }
+            var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+            // if (user.Id != userProfile.UserId)
+            // {
+            //     return NotFound();
+            // }
+
+            try
+            {
+                // Todo: determine why it blows up here
+                var formCollection = await Request.ReadFormAsync();
+                var file = formCollection.Files.First();
+                var folderName = Path.Combine("Resources", "Images");
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (file.Length > 0)
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fullPath = Path.Combine(pathToSave, fileName);
+                    var dbPath = Path.Combine(folderName, fileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    return Ok(new { dbPath });
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+
         // public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
-        public async Task<IActionResult> Edit([FromBody] UserProfileModel userProfile)
+        [HttpPut("edit"), DisableRequestSizeLimit]
+        public async Task<IActionResult> Edit([FromForm] EditProfileModel userProfile)
         {
 
             // Retrieve the JWT token from the Authorization header
@@ -654,6 +701,7 @@ namespace worsham.twitter.clone.angular.Controllers
             {
                 return NotFound();
             }
+
             bool didProfilePictureUploadSucceed = false;
             if (ModelState.IsValid)
             {
@@ -662,21 +710,16 @@ namespace worsham.twitter.clone.angular.Controllers
                     string fileName = null;
                     if (userProfile.FormFile != null)
                     {
-                        string wwwRootPath = _webHostEnvironment.WebRootPath;
-                        Guid guid = Guid.NewGuid();
-                        fileName = Path.GetFileNameWithoutExtension(userProfile.FormFile.FileName) + guid.ToString();
-                        string extension = Path.GetExtension(userProfile.FormFile.FileName);
+                        fileName = Path.GetFileNameWithoutExtension(userProfile.FileName) + Guid.NewGuid().ToString();
+                        string extension = Path.GetExtension(userProfile.FileName);
                         fileName = fileName + extension;
-                        // worsham.twitter.clone.angular\ClientApp\src\assets\images\uploads\profile_pictures
                         string path = Path.Combine("/ClientApp/src/assets/images/uploads/profile_pictures", fileName);
 
                         using (var fileStream = new FileStream(path, FileMode.Create))
                         {
-                            await userProfile.FormFile.CopyToAsync(fileStream);
+                            await fileStream.WriteAsync(userProfile.FormFile, 0, userProfile.FormFile.Length);
                         }
-
-                        base._logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
-                        // Mark profile picture upload as successful
+                        _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
                         didProfilePictureUploadSucceed = true;
                     }
 
@@ -692,6 +735,15 @@ namespace worsham.twitter.clone.angular.Controllers
                     });
                     await _context.SaveChangesAsync();
                     _logger.LogInformation("User profile updated for user with ID: {UserId}", userProfile.UserId);
+                    _logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
+                    if (!didProfilePictureUploadSucceed)
+                    {
+                        return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred. The user's profile picture upload failed." });
+                    }
+                    else
+                    {
+                        return Json(new TwitterApiActionResult { Success = true });
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -711,21 +763,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     base._logger.LogError(ex, "An error occurred while editing the user profile for user with ID: {UserId}", userProfile.UserId);
                     return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while editing the user profile for user with ID: " + userProfile.UserId.ToString() });
                 }
-
-                if (!didProfilePictureUploadSucceed)
-                {
-                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred. The user's profile picture upload failed." });
-                }
-                else
-                {
-                    ViewData["didProfilePictureUploadSucceed"] = true;
-                    return Json(new TwitterApiActionResult { Success = true });
-                }
-
-                base._logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
-
             }
-            // return View(model: userProfile);
             return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Invalid input data." });
         }
     }

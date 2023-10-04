@@ -1,0 +1,46 @@
+<!-- @model UserProfileModel; -->
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="post" class="modal-content" enctype="multipart/form-data" #editProfileForm="ngForm" (ngSubmit)="updateProfile()">
+      <!-- <div asp-validation-summary="ModelOnly" class="text-danger"></div> -->
+      <!-- <input type="hidden" asp-for="UserId" /> -->
+      <div class="modal-header d-flex justify-content-start border-bottom-0">
+        <button type="button" class="btn-close m-0 me-4" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title fw-bold" id="modalLabel">Edit profile</h5>
+        <button id="btnSave" type="submit" class="btn btn-primary--dark rounded-pill ms-auto" [disabled]="!editProfileForm.form.valid">Save</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="inputUserName" #inputUserName="ngModel" placeholder="Name" name="UserName" [(ngModel)]="userProfileModel.UserName" maxlength="20" required>
+          <label for="inputUserName">Name</label>
+          <div [hidden]="inputUserName.valid || inputUserName.pristine" id="userNameErrorMsg" class="alert alert-danger">
+            <div *ngIf="inputUserName.errors?.['required']">
+              Name is required
+            </div>
+            <div *ngIf="inputUserName.errors?.['maxlength']">
+              The maximum length for name is 20 characters.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-floating mb-3">
+        <textarea id="textAreaBio" #textAreaBio="ngModel" class="form-control" placeholder="Bio" rows="6" name="Bio" [(ngModel)]="userProfileModel.Bio"></textarea>
+        <label for="textAreaBio">Bio</label>
+        <!-- <span asp-validation-for="Bio" class="text-danger"></span> -->
+      </div>
+      <div class="mb-3">
+        <label for="inputPhoto" class="form-label">Add profile photo</label>
+        <!-- <input accept="image/*" class="form-control" type="file" id="inputPhoto" #inputPhoto name="FormFile" (change)="onFileSelected($event)"> -->
+        <input type="file" class="form-control" accept="image/*" #file placeholder="Choose image" (change)="uploadFile(file.files)">
+        <span class="upload" *ngIf="progress > 0">
+          {{progress}}%
+        </span>
+        <span class="upload" *ngIf="message">
+          {{message}}
+        </span>
+        <!-- <span asp-validation-for="FormFile" class="text-danger"></span> -->
+      </div>
+    </form>
+  </div>
+</div>
