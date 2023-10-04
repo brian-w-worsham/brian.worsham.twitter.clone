@@ -288,7 +288,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     Likes = tweet.Likes.ToList(),
                     Comments = tweet.Comments.ToList(),
                     Retweets = tweet.ReTweets.ToList(),
-                    TweeterProfilePictureUrl = tweeter?.ProfilePictureUrl ?? "\\default\\1.jpg"
+                    TweeterProfilePictureUrl = tweeter?.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg"
                 });
             }
             return tweetModels;

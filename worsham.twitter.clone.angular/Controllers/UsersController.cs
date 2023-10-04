@@ -470,7 +470,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     UserId = user.Id,
                     UserName = user.UserName,
                     Bio = user.Bio,
-                    ProfilePictureUrl = user.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    ProfilePictureUrl = user.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg",
                     FollowersCount = _context.Follows.Count(f => f.FollowedUserId == user.Id),
                     FollowingCount = _context.Follows.Count(f => f.FollowerUserId == user.Id),
                     Tweets = tweets,
@@ -503,7 +503,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     Likes = tweet.Likes.ToList(),
                     Comments = tweet.Comments.ToList(),
                     Retweets = tweet.ReTweets.ToList(),
-                    TweeterProfilePictureUrl = tweeter?.ProfilePictureUrl ?? "\\default\\1.jpg"
+                    TweeterProfilePictureUrl = tweeter?.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg"
                 });
             }
             return tweetModels;
@@ -562,7 +562,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     if (!profilePictureUrlModels.Exists(p => p.TweetId == tweet.Id))
                     {
                         var user = _context.Users.FirstOrDefault(u => u.Id == tweet.TweeterUserId);
-                        string profilePictureUrl = user?.ProfilePictureUrl ?? "\\default\\1.jpg";
+                        string profilePictureUrl = user?.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg";
 
                         profilePictureUrlModels.Add(new ProfilePictureUrlModel { TweetId = tweet.Id, ProfilePictureUrl = profilePictureUrl });
 
@@ -593,7 +593,7 @@ namespace worsham.twitter.clone.angular.Controllers
                     OriginalTweet = r.OriginalTweet,
                     OriginalTweetId = r.OriginalTweetId,
                     OriginalUserName = r.OriginalTweet.Tweeter.UserName,
-                    OriginalProfilePictureUrl = r.OriginalTweet.Tweeter.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    OriginalProfilePictureUrl = r.OriginalTweet.Tweeter.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg",
                     OriginalTweetCreationDateTime = r.OriginalTweet.CreationDateTime,
                     OriginalTweetContent = r.OriginalTweet.Content
                 }).ToList();
@@ -613,7 +613,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 {
                     LikedTweet = l.LikedTweet,
                     LikedTweetId = l.LikedTweetId,
-                    OriginalProfilePictureUrl = l.LikedTweet.Tweeter.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    OriginalProfilePictureUrl = l.LikedTweet.Tweeter.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg",
                     OriginalUserName = l.LikedTweet.Tweeter.UserName,
                     OriginalTweetCreationDateTime = l.LikedTweet.CreationDateTime,
                     OriginalTweetContent = l.LikedTweet.Content
@@ -649,23 +649,32 @@ namespace worsham.twitter.clone.angular.Controllers
             }
             var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
 
-            // if (user.Id != userProfile.UserId)
-            // {
-            //     return NotFound();
-            // }
+            if(user == null)
+            {
+                return NotFound();
+            }
 
             try
             {
-                // Todo: determine why it blows up here
                 var formCollection = await Request.ReadFormAsync();
                 var file = formCollection.Files.First();
-                var folderName = Path.Combine("Resources", "Images");
+                // worsham.twitter.clone.angular\ClientApp\src\assets\images\uploads\profile_pictures
+                var folderName = Path.Combine("ClientApp", "src");
+                // add assets to the folderName
+                folderName = Path.Combine(folderName, "assets");
+                // add images to the folderName
+                folderName = Path.Combine(folderName, "images");
+                // add uploads to the folderName
+                folderName = Path.Combine(folderName, "uploads");
+                // add profile_pictures to the folderName
+                folderName = Path.Combine(folderName, "profile_pictures");
+                string relativeFolderName = Path.Combine("assets", "images", "uploads", "profile_pictures");
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
                 if (file.Length > 0)
                 {
                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
                     var fullPath = Path.Combine(pathToSave, fileName);
-                    var dbPath = Path.Combine(folderName, fileName);
+                    var dbPath = Path.Combine(relativeFolderName, fileName);
                     using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
                         file.CopyTo(stream);
@@ -683,10 +692,8 @@ namespace worsham.twitter.clone.angular.Controllers
             }
         }
 
-
-        // public async Task<IActionResult> Edit(int UserId, [Bind("UserId,UserName,Bio,FormFile")] UserProfileModel userProfile)
-        [HttpPut("edit"), DisableRequestSizeLimit]
-        public async Task<IActionResult> Edit([FromForm] EditProfileModel userProfile)
+        [HttpPost("edit")]
+        public async Task<IActionResult> Edit([FromBody] EditProfileModel userProfile)
         {
 
             // Retrieve the JWT token from the Authorization header
@@ -702,61 +709,36 @@ namespace worsham.twitter.clone.angular.Controllers
                 return NotFound();
             }
 
-            bool didProfilePictureUploadSucceed = false;
             if (ModelState.IsValid)
             {
                 try
                 {
-                    string fileName = null;
-                    if (userProfile.FormFile != null)
+                    // Detach the existing entity before updating it
+                    var existingUser = _context.Users.Find(userProfile.UserId);
+                    if (existingUser != null)
                     {
-                        fileName = Path.GetFileNameWithoutExtension(userProfile.FileName) + Guid.NewGuid().ToString();
-                        string extension = Path.GetExtension(userProfile.FileName);
-                        fileName = fileName + extension;
-                        string path = Path.Combine("/ClientApp/src/assets/images/uploads/profile_pictures", fileName);
-
-                        using (var fileStream = new FileStream(path, FileMode.Create))
-                        {
-                            await fileStream.WriteAsync(userProfile.FormFile, 0, userProfile.FormFile.Length);
-                        }
-                        _logger.LogInformation("Profile picture uploaded successfully for user with ID: {UserId}", userProfile.UserId);
-                        didProfilePictureUploadSucceed = true;
+                        _context.Entry(existingUser).State = EntityState.Detached;
                     }
-
+                    
                     _context.Update(entity: new Users()
                     {
                         Id = userProfile.UserId,
                         UserName = userProfile.UserName,
                         Bio = userProfile.Bio,
-                        ProfilePictureUrl = fileName ?? _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.ProfilePictureUrl).FirstOrDefault(),
+                        ProfilePictureUrl = userProfile.ProfilePictureUrl ?? _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.ProfilePictureUrl).FirstOrDefault(),
                         Email = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Email).FirstOrDefault(),
                         Password = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.Password).FirstOrDefault(),
                         UserRole = _context.Users.Where(u => u.Id == userProfile.UserId).Select(u => u.UserRole).FirstOrDefault(),
                     });
                     await _context.SaveChangesAsync();
-                    _logger.LogInformation("User profile updated for user with ID: {UserId}", userProfile.UserId);
-                    _logger.LogInformation("Profile picture upload result: {UploadResult}", didProfilePictureUploadSucceed);
-                    if (!didProfilePictureUploadSucceed)
-                    {
-                        return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred. The user's profile picture upload failed." });
-                    }
-                    else
-                    {
-                        return Json(new TwitterApiActionResult { Success = true });
-                    }
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    base._logger.LogError("Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
 
-                    if (!UsersExists(id: userProfile.UserId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Concurrency exception while updating profile for user with ID: " + userProfile.UserId.ToString() });
-                    }
+                    _logger.LogInformation("User profile updated for user with ID: {UserId}", userProfile.UserId);
+                    return Json(new TwitterApiActionResult { Success = true });
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    _logger.LogError(ex, "Concurrency exception while updating profile for user with ID: {UserId}", userProfile.UserId);
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Concurrency exception while updating profile for user with ID: " + userProfile.UserId.ToString() });
                 }
                 catch (Exception ex)
                 {

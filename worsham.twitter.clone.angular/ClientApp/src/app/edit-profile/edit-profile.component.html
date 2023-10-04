@@ -31,7 +31,6 @@
       </div>
       <div class="mb-3">
         <label for="inputPhoto" class="form-label">Add profile photo</label>
-        <!-- <input accept="image/*" class="form-control" type="file" id="inputPhoto" #inputPhoto name="FormFile" (change)="onFileSelected($event)"> -->
         <input type="file" class="form-control" accept="image/*" #file placeholder="Choose image" (change)="uploadFile(file.files)">
         <span class="upload" *ngIf="progress > 0">
           {{progress}}%

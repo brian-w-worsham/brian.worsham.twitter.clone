@@ -3,7 +3,6 @@ export class EditProfileModel {
     public UserId: number,
     public UserName: string,
     public Bio: string,
-    public FormFile: string,
-    public FileName: string,
+    public ProfilePictureUrl: string,
   ) {}
 }

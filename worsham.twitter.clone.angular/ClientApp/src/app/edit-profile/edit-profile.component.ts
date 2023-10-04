@@ -44,36 +44,15 @@ export class EditProfileComponent implements OnInit {
     if (token) {
       const httpOptions = this.setHttpOptions(token);
 
-      const formData = new FormData();
-      formData.append('UserId', this.userProfileModel.UserId.toString());
-      formData.append('UserName', this.userProfileModel.UserName);
-      formData.append('Bio', this.userProfileModel.Bio);
-      const fileReader = new FileReader();
-      fileReader.readAsArrayBuffer(this.userProfileModel.FormFile);
-      fileReader.onload = () => {
-        const arrayBuffer = fileReader.result as ArrayBuffer;
-        const uint8Array = new Uint8Array(arrayBuffer);
-        formData.append(
-          'FormFile',
-          new Blob([uint8Array], { type: this.userProfileModel.FormFile.type }),
-          this.userProfileModel.FormFile
-            ? this.userProfileModel.FormFile.name
-            : 'profilePic',
-        );
-      };
-
-      // const editProfileModel = new EditProfileModel(
-      //   this.userProfileModel.UserId,
-      //   this.userProfileModel.UserName,
-      //   this.userProfileModel.Bio,
-      //   this.userProfileModel.FormFile,
-      // this.userProfileModel.FormFile
-      //   ? this.userProfileModel.FormFile.name
-      //   : 'profilePic',
-      // );
+      const editProfileModel = new EditProfileModel(
+        this.userProfileModel.UserId,
+        this.userProfileModel.UserName,
+        this.userProfileModel.Bio,
+        this.userProfileModel.ProfilePictureUrl,
+      );
 
       this.http
-        .post('https://localhost:7232/api/users/edit', formData, httpOptions)
+        .post('https://localhost:7232/api/users/edit', editProfileModel, httpOptions)
         .pipe(catchError(this.handleError<any>('updateProfile')))
         .subscribe({
           next: (response) => {
@@ -90,11 +69,6 @@ export class EditProfileComponent implements OnInit {
           },
         });
     }
-  }
-
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-    this.userProfileModel.FormFile = file;
   }
 
   uploadFile = (files: any) => {
@@ -124,9 +98,13 @@ export class EditProfileComponent implements OnInit {
           next: (event) => {
             if (event.type === HttpEventType.UploadProgress)
               this.progress = Math.round((100 * event.loaded) / event.total!);
-            else if (event.type === HttpEventType.Response) {
+            else if (
+              event.type === HttpEventType.Response &&
+              event.status === 200
+            ) {
               this.message = 'Upload success.';
-              this.whenUploadFinished.emit(event.body);
+              // this.whenUploadFinished.emit(event.body);
+              this.userProfileModel.ProfilePictureUrl = event.body.dbPath;
             }
           },
           error: (err: HttpErrorResponse) => console.log(err),

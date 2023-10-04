@@ -14,7 +14,7 @@
             <div class="text-secondary small">{{userProfileModel.Tweets.$values.length}} posts</div>
             <div class="card">
                 <img id="profileBackdrop" class="card-img-top border-0 profile-backdrop" title="backdrop" />
-                <img id="profilePicture" class="profile-picture rounded-circle" src="../../assets/images/uploads/profile_pictures/{{userProfileModel.ProfilePictureUrl}}" title="profile picture" />
+                <img id="profilePicture" class="profile-picture rounded-circle" src="../../{{userProfileModel.ProfilePictureUrl}}" title="profile picture" />
                 <button *ngIf="userProfileModel?.UserIsViewingOwnProfile; else elseBlock" id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal" autocomplete="off">Edit profile</button>
                 <ng-template #elseBlock>
                     <!-- Todo: implement unfollow functionality -->
@@ -59,7 +59,7 @@
                 <div id="panelTweets" #panelTweets class="">
                     <div class="row" *ngFor="let tweet of userProfileModel?.Tweets?.$values">
                         <div class="col col-1">
-                            <img class="user-img rounded-circle" decoding="async" src="../../assets/images/uploads/profile_pictures/{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
+                            <img class="user-img rounded-circle" decoding="async" src="../../{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
                         </div>
                         <div class="col col-11">
                             <div class="card-body">
@@ -75,7 +75,7 @@
                 <div id="panelReTweets" #panelReTweets class="d-none">
                     <div class="row" *ngFor="let retweet of userProfileModel?.RetweetedTweets?.$values">
                         <div class="col col-1">
-                            <img class="user-img rounded-circle" decoding="async" src="../../assets/images/uploads/profile_pictures/{{retweet?.OriginalProfilePictureUrl}}" title="profile picture" />
+                            <img class="user-img rounded-circle" decoding="async" src="../../{{retweet?.OriginalProfilePictureUrl}}" title="profile picture" />
                         </div>
                         <div class="col col-11">
                             <div class="card-body">
@@ -91,7 +91,7 @@
                 <div id="panelLikes" #panelLikes class="d-none">
                     <div class="row" *ngFor="let likedTweet of userProfileModel?.LikedTweetInfos?.$values">
                         <div class="col col-1">
-                            <img class="user-img rounded-circle" decoding="async" src="../../assets/images/uploads/profile_pictures/{{likedTweet?.OriginalProfilePictureUrl}}" title="profile picture" />
+                            <img class="user-img rounded-circle" decoding="async" src="../../{{likedTweet?.OriginalProfilePictureUrl}}" title="profile picture" />
                         </div>
                         <div class="col col-11">
                             <div class="card-body">
