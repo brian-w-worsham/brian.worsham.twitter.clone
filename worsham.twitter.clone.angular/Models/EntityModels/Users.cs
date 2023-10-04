@@ -39,7 +39,7 @@ namespace worsham.twitter.clone.angular.Models.EntityModels
         [StringLength(160)]
         [Unicode(false)]
         public string Bio { get; set; }
-        [StringLength(300)]
+        [StringLength(1000)]
         [Unicode(false)]
         public string ProfilePictureUrl { get; set; }
         [Required]

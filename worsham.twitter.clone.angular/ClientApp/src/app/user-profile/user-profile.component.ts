@@ -9,11 +9,11 @@ import * as bootstrap from 'bootstrap';
 @Component({
   selector: 'app-user-profile',
   templateUrl: './user-profile.component.html',
-  styleUrls: ['./user-profile.component.css']
+  styleUrls: ['./user-profile.component.css'],
 })
 export class UserProfileComponent implements OnInit {
   TweeterUserId: string | undefined;
-  userProfileModel: UserProfileModel | undefined;
+  userProfileModel!: UserProfileModel;
   btnTweets: any;
   btnReTweets: any;
   btnLikes: any;
@@ -21,7 +21,10 @@ export class UserProfileComponent implements OnInit {
   panelReTweets: any;
   panelLikes: any;
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) { }
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+  ) {}
 
   ngOnInit(): void {
     this.TweeterUserId = this.route.snapshot.paramMap.get('id?') ?? undefined;
@@ -35,7 +38,14 @@ export class UserProfileComponent implements OnInit {
     this.panelReTweets = document.getElementById('panelReTweets');
     this.panelLikes = document.getElementById('panelLikes');
 
-    if (this.btnTweets && this.btnReTweets && this.btnLikes && this.panelTweets && this.panelReTweets && this.panelLikes) {
+    if (
+      this.btnTweets &&
+      this.btnReTweets &&
+      this.btnLikes &&
+      this.panelTweets &&
+      this.panelReTweets &&
+      this.panelLikes
+    ) {
       this.addEventListeners();
     }
   }
@@ -57,30 +67,33 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
+  public createImgPath = (serverPath: string) => {
+    let path: string = `https://localhost:44429/${serverPath}`;
+    // replace all backs lashes \ with foward slashes /
+    path = path.replace(/\\/g, '/');
+    return path;
+  };
+
   showPanel(panel: any) {
     const panels = [this.panelTweets, this.panelReTweets, this.panelLikes];
-    panels.forEach(
-      (p) => {
-        if (p === panel) {
-          p.classList.remove('d-none');
-        }
-        else {
-          p.classList.add('d-none');
-        }
-      });
+    panels.forEach((p) => {
+      if (p === panel) {
+        p.classList.remove('d-none');
+      } else {
+        p.classList.add('d-none');
+      }
+    });
   }
 
   toggleButtonActive(button: any) {
     const buttons = [this.btnTweets, this.btnReTweets, this.btnLikes];
-    buttons.forEach(
-      (btn) => {
-        if (btn === button) {
-          btn.classList.add('active');
-        }
-        else {
-          btn.classList.remove('active');
-        }
-      });
+    buttons.forEach((btn) => {
+      if (btn === button) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
   }
 
   getUserProfile(): void {
@@ -107,7 +120,7 @@ export class UserProfileComponent implements OnInit {
               console.info('successfully retrieved profile data');
               console.log(response);
               this.userProfileModel = response;
-              console.log("UserProfileModel:");
+              console.log('UserProfileModel:');
               console.log(this.userProfileModel);
               //window.location.href = '/home';
             }

@@ -1,7 +1,7 @@
 <div *ngIf="tweetsFeed">
   <div class="row g-0" *ngFor="let tweet of tweetsFeed.Tweets.$values; let i = index">
     <div class="col col-1">
-      <img class="user-img rounded-circle" src="../../assets/images/uploads/profile_pictures/{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
+      <img class="user-img rounded-circle" src="../../{{tweet.TweeterProfilePictureUrl}}" title="profile picture" />
     </div>
     <div class="col col-11">
       <div class="card border-start-0">

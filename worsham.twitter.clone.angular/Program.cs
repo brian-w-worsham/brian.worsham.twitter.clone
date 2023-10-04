@@ -4,6 +4,8 @@ using worsham.twitter.clone.angular.Models.EntityModels;
 using worsham.twitter.clone.angular.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.FileProviders;
 using System.Text;
 
 namespace worsham.twitter.clone.angular
@@ -28,6 +30,13 @@ namespace worsham.twitter.clone.angular
                     "AllowOrigin",
                     builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Authorization")
                 );
+            });
+
+            builder.Services.Configure<FormOptions>(o =>
+            {
+                o.ValueLengthLimit = int.MaxValue;
+                o.MultipartBodyLengthLimit = int.MaxValue;
+                o.MemoryBufferThreshold = int.MaxValue;
             });
 
             builder.Services.AddDbContext<TwitterCloneContext>(
@@ -74,8 +83,6 @@ namespace worsham.twitter.clone.angular
 
             var app = builder.Build();
 
-
-
             app.UseSession();
 
             // Configure the HTTP request pipeline.
@@ -86,7 +93,13 @@ namespace worsham.twitter.clone.angular
             }
 
             app.UseHttpsRedirection();
+            
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
+                RequestPath = new PathString("/Resources")
+            });
             app.UseRouting();
             app.UseCors("AllowOrigin");
 
@@ -98,20 +111,6 @@ namespace worsham.twitter.clone.angular
             app.MapFallbackToFile("index.html");
 
             app.Run();
-
-            string GenerateRandomString(int length)
-            {
-                const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                var random = new Random();
-                var result = new StringBuilder(length);
-
-                for (int i = 0; i < length; i++)
-                {
-                    result.Append(chars[random.Next(chars.Length)]);
-                }
-
-                return result.ToString();
-            }
         }
     }
 }

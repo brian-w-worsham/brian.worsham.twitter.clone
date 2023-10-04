@@ -18,7 +18,7 @@ import { TweetActionsRowComponent } from './tweet-actions-row/tweet-actions-row.
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { CreateCommentComponent } from './create-comment/create-comment.component';
 import { TweetAndRelatedCommentsComponent } from './tweet-and-related-comments/tweet-and-related-comments.component';
-import { EditProileComponent } from './edit-proile/edit-proile.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +36,7 @@ import { EditProileComponent } from './edit-proile/edit-proile.component';
     UserProfileComponent,
     CreateCommentComponent,
     TweetAndRelatedCommentsComponent,
-    EditProileComponent,
+    EditProfileComponent,
   ],
   imports: [
     BrowserModule,
