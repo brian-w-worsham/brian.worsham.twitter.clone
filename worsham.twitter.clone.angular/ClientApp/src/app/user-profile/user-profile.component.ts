@@ -122,7 +122,6 @@ export class UserProfileComponent implements OnInit {
               this.userProfileModel = response;
               console.log('UserProfileModel:');
               console.log(this.userProfileModel);
-              //window.location.href = '/home';
             }
           },
           error: (error) => {
@@ -148,5 +147,65 @@ export class UserProfileComponent implements OnInit {
       }),
     };
     return httpOptions;
+  }
+
+  postFollow(userId: number): void {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      const httpOptions = this.setHttpOptions(token);
+
+      this.http
+        .post(
+          'https://localhost:7232/api/follows/follow_user',
+          userId,
+          httpOptions,
+        )
+        .pipe(catchError(this.handleError<any>('postFollow')))
+        .subscribe({
+          next: (response) => {
+            if (response.success == false) {
+              console.log(response.errorMessage);
+            } else {
+              console.info('successfully followed user');
+              console.log(response);
+              // window.location.href = `/profile/${userId}`;
+              window.location.href = "/home";
+            }
+          },
+          error: (error) => {
+            console.log(error.message);
+          },
+        });
+    }
+  }
+
+  postUnFollow(followId: number, followedUserId: number): void {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      const httpOptions = this.setHttpOptions(token);
+
+      this.http
+        .post(
+          'https://localhost:7232/api/follows/unfollow_user',
+          followId,
+          httpOptions,
+        )
+        .pipe(catchError(this.handleError<any>('postUnFollow')))
+        .subscribe({
+          next: (response) => {
+            if (response.success == false) {
+              console.log(response.errorMessage);
+            } else {
+              console.info('successfully unfollowed user');
+              console.log(response);
+              // window.location.href = `/profile/${followedUserId}`;
+              window.location.href = "/home";
+            }
+          },
+          error: (error) => {
+            console.log(error.message);
+          },
+        });
+    }
   }
 }

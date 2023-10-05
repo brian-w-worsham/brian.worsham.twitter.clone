@@ -175,20 +175,6 @@ namespace worsham.twitter.clone.angular.Controllers
             }
         }
 
-        /// <summary>
-        /// Creates a new follow relationship between the current user and the specified user.
-        /// </summary>
-        /// <param name="userId">The ID of the user to be followed.</param>
-        /// <returns>
-        /// Returns an <see cref="IActionResult"/> representing the action result after creating the
-        /// follow. If successful, redirects to the "Index" action of the "Tweets" controller.
-        /// </returns>
-        /// <remarks>
-        /// If the ModelState is valid, a new follow relationship is created and saved in the
-        /// database. Logs information about the follow creation. If the ModelState is invalid or an
-        /// exception occurs, appropriate error logging is performed and a redirection to the
-        /// "Index" action of the "Tweets" controller is executed.
-        /// </remarks>
         [HttpPost("follow_user")]
         public async Task<IActionResult> Create([FromBody] int userId)
         {
@@ -230,6 +216,55 @@ namespace worsham.twitter.clone.angular.Controllers
         private bool FollowsExists(int id)
         {
             return (_context.Follows?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        [HttpPost("unfollow_user")]
+        public async Task<IActionResult> UnFollow([FromBody] int followId)
+        {
+            try
+            {
+                // Retrieve the JWT token from the Authorization header
+                var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (authorizationHeader == null)
+                {
+                    throw new ArgumentNullException(nameof(authorizationHeader));
+                }
+                var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+                if (user.Id < 1)
+                {
+                    _logger.LogInformation("User is not logged in.");
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
+                }
+
+                _currentUserId = user.Id;
+
+                if (ModelState.IsValid && followId > 0)
+                {
+                    // remove followId from Follows table
+                    var follow = _context.Follows.Where(f => f.Id == followId).FirstOrDefault();
+                    if (follow != null)
+                    {
+                        _context.Follows.Remove(follow);
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation($"Follow deleted: FollowerUserId = {_currentUserId}, FollowedUserId = {follow.FollowedUserId}");
+                        return Json(new TwitterApiActionResult { Success = true });
+                    }
+                    else
+                    {
+                        _logger.LogError($"Follow not found: FollowId = {followId}");
+                        return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while attempting to unfollow. Follow not found." });
+                    }
+                    
+                }
+                _logger.LogError("ModelState is invalid");
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while attempting to unfollow. Invalid input data." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating unFollow");
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "An error occurred while attempting to unfollow." });
+            }
         }
     }
 }
