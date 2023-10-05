@@ -13,7 +13,7 @@ const routes: Routes = [
   },
   { path: 'home', component: AuthenticatedLayoutComponent, title: 'Home / X' },
   { path: 'profile', component: UserProfileComponent, title: 'Profile' },
-  { path: 'profile/:id?', component: UserProfileComponent, title: 'Profile' }
+  { path: 'profile/:id?', component: UserProfileComponent, title: 'Profile' },
 ];
 
 //The @NgModule metadata initializes the router and starts it listening for browser location changes.

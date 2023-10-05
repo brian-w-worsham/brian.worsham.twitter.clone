@@ -44,7 +44,7 @@
         <a class="nav-link disabled" [routerLinkActive]="['active']" [routerLink]="['/more']">More</a>
       </li>
       <li class="nav-item">
-        <form asp-action="Logout" asp-controller="Users" method="post">
+        <form method="post" id="logoutForm" #logoutForm="ngForm" (ngSubmit)="logout()" >
           <input type="submit" class="nav-link" value="Logout" />
         </form>
       </li>

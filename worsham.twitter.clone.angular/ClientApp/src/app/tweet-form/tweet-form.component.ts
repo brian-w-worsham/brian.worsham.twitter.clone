@@ -46,12 +46,11 @@ export class TweetFormComponent {
                 response.errorMessage;
               console.log(response.errorMessage);
             } else {
-              // successfully authenticated user
               this.successfulTweetPost = true;
               document.querySelector('#tweetPostErrorMessage')!.innerHTML = '';
               console.info('successfully posted tweet');
               console.log(response);
-              // window.location.href = '/home';
+              window.location.href = '/home';
             }
           },
           error: (error) => {
