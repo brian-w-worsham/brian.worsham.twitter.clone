@@ -7,7 +7,7 @@
       <div class="modal-body">
         <div class="row g-0">
           <div class="col col-1">
-            <img class="user-img rounded-circle" decoding="async" [src]="'../../assets/images/uploads/profile_pictures/' + tweetsFeed.Tweets.$values[index].TweeterProfilePictureUrl" asp-append-version="true" title="profile picture" />
+            <img class="user-img rounded-circle" decoding="async" src="'../../{{tweetsFeed.Tweets.$values[index].TweeterProfilePictureUrl}}" asp-append-version="true" title="profile picture" />
           </div>
           <div class="col col-11">
             <div class="card">
