@@ -1,0 +1,29 @@
+volumes:
+    keys_volume:
+
+services:
+    sql_server:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        environment:
+            SA_PASSWORD: "GLvd8whQnA"
+            ACCEPT_EULA: "Y"
+        ports:
+            - "1433:1433"
+
+    webapp:
+        build:
+            context: .
+            dockerfile: Dockerfile.backend
+        volumes:
+            - ./data:/app/data
+            - keys_volume:/keys
+        ports:
+            - "5140:5140"
+            - "7232:7232"
+        depends_on:
+            - sql_server
+        environment:
+            - TwitterCloneConnectionString=Server=sql_server;Initial Catalog=TwitterClone;Persist Security Info=True;User ID=SA;Password=GLvd8whQnA;MultipleActiveResultSets=True
+            - SecretKeyForJwtToken=5cf148b7-cb19-4186-9078-a453d8e9556a
+            - ValidIssuer=worsham.twitter.clone.angular
+            - ValidAudience=worsham.twitter.clone.angular.ClientApp

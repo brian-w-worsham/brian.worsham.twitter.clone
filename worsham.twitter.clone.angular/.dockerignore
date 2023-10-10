@@ -1,0 +1,16 @@
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.vs
+**/.vscode
+**/docker-compose*
+**/Dockerfile*
+**/node_modules
+**/obj
+docker-compose.yml
+Dockerfile.frontend
+Dockerfile.backend
+LICENSE
+README.md
