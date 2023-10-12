@@ -1,0 +1,40 @@
+# Stage 1: Build Angular app with Node
+FROM node:20.8.0 AS node-build
+WORKDIR /app
+COPY ClientApp/package.json ClientApp/package-lock.json ./
+RUN npm install -g @angular/cli@latest
+RUN npm install
+COPY ClientApp/ ./
+RUN npm run build
+
+# Stage 2: Build .NET Core app
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+WORKDIR /app
+
+# Copy everything .NET related and restore as distinct layers
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . ./
+
+RUN ls -la /app
+# This will also copy the result from the previous stage (Angular build)
+COPY --from=node-build /app/dist /app/ClientApp/dist/
+
+RUN dotnet publish -c Release -o out
+
+# Stage 3: Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+WORKDIR /app
+COPY --from=build-env /app/out .
+COPY --from=build-env /app/ClientApp/dist/ ClientApp/dist/
+
+
+# Copy the development certificate into the container
+COPY aspnetapp.pfx /root/.aspnet/https/aspnetapp.pfx
+
+# Set environment variables to configure ASP.NET Core to use the development certificate
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="password1"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/aspnetapp.pfx
+
+ENTRYPOINT ["dotnet", "worsham.twitter.clone.angular.dll"]

@@ -7,6 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 
 namespace worsham.twitter.clone.angular
 {
@@ -17,11 +21,24 @@ namespace worsham.twitter.clone.angular
             var builder = WebApplication.CreateBuilder(args);
             builder.Configuration.AddUserSecrets<Program>();
 
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.Listen(IPAddress.Any, 5140); // HTTP
+                serverOptions.Listen(IPAddress.Any, 7232, listenOptions => // HTTPS
+                {
+                    var password = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Password");
+                    var pathToCertificate = Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Path");
+                    var certificate = new X509Certificate2(pathToCertificate, password);
+                    listenOptions.UseHttps(certificate);
+                });
+            });
+
             // Add services to the container.
-            var connectionString =
-                builder.Configuration.GetConnectionString("TwitterCloneConnectionString")
+
+            var connectionString = Environment.GetEnvironmentVariable("TwitterCloneConnectionString")
+                       ?? builder.Configuration.GetConnectionString("TwitterCloneConnectionString")
                 ?? throw new InvalidOperationException(
-                    "Connection string 'DefaultConnection' not found."
+                    "Connection string 'TwitterCloneConnectionString' not found."
                 );
 
             builder.Services.AddCors(options =>
@@ -40,7 +57,7 @@ namespace worsham.twitter.clone.angular
             });
 
             builder.Services.AddDbContext<TwitterCloneContext>(
-                options => options.UseSqlServer(connectionString)
+                options => options.UseSqlServer(connectionString, opts => opts.EnableRetryOnFailure())
             );
             //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -53,13 +70,13 @@ namespace worsham.twitter.clone.angular
                 options.Cookie.IsEssential = true;
             });
 
-            // var secretKey = GenerateRandomString(64);
+            builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo("/keys/")).SetDefaultKeyLifetime(TimeSpan.FromDays(9999));
 
             // retrieve SecretKeyForJwtToken from secrets.json
-            string secretKeyForJwtToken = builder.Configuration["SecretKeyForJwtToken"] ?? throw new InvalidOperationException("SecretKeyForJwtToken not found in configuration.");
+            string secretKeyForJwtToken = builder.Configuration["SecretKeyForJwtToken"] ?? Environment.GetEnvironmentVariable("TwitterCloneConnectionString") ?? throw new InvalidOperationException("SecretKeyForJwtToken not found in configuration or environment variables.");
 
-            string validIssuer = builder.Configuration["ValidIssuer"] ?? throw new InvalidOperationException("ValidIssuer not found in configuration.");
-            string validAudience = builder.Configuration["ValidAudience"] ?? throw new InvalidOperationException("ValidAudience not found in configuration.");
+            string validIssuer = builder.Configuration["ValidIssuer"] ?? Environment.GetEnvironmentVariable("ValidIssuer") ?? throw new InvalidOperationException("ValidIssuer not found in configuration or environment variables.");
+            string validAudience = builder.Configuration["ValidAudience"] ?? Environment.GetEnvironmentVariable("ValidAudience") ?? throw new InvalidOperationException("ValidAudience not found in configuration or environment variables.");
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -93,22 +110,42 @@ namespace worsham.twitter.clone.angular
             }
 
             app.UseHttpsRedirection();
-            
-            app.UseStaticFiles();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
-                RequestPath = new PathString("/Resources")
-            });
+
+            Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
+
             app.UseRouting();
             app.UseCors("AllowOrigin");
-
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllerRoute(name: "default", pattern: "{controller}/{action=Index}/{id?}");
+            app.Use(async (context, next) =>
+            {
+                await next();
 
-            app.MapFallbackToFile("index.html");
+                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) && !context.Request.Path.Value.StartsWith("/api/"))
+                {
+                    context.Request.Path = "/index.html";
+                    await next();
+                }
+            });
+
+            app.UseDefaultFiles(new DefaultFilesOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist"))
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist")),
+            });
+
+            app.MapGet("/", async context =>
+            {
+                context.Response.ContentType = "text/html";
+                await context.Response.SendFileAsync(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist", "index.html"));
+            });
+
+            app.MapControllerRoute(name: "default", pattern: "{controller}/{action=Index}/{id?}");
 
             app.Run();
         }

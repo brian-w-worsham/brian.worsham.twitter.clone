@@ -500,7 +500,6 @@ namespace worsham.twitter.clone.angular.Controllers
             {
                 var formCollection = await Request.ReadFormAsync();
                 var file = formCollection.Files.First();
-                // worsham.twitter.clone.angular\ClientApp\src\assets\images\uploads\profile_pictures
                 var folderName = Path.Combine("ClientApp", "src");
                 // add assets to the folderName
                 folderName = Path.Combine(folderName, "assets");
