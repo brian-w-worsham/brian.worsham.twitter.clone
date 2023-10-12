@@ -3,12 +3,23 @@ volumes:
 
 services:
     sql_server:
-        image: mcr.microsoft.com/mssql/server:2019-latest
+        image: mcr.microsoft.com/mssql/server:2022-latest
         environment:
             SA_PASSWORD: "GLvd8whQnA"
             ACCEPT_EULA: "Y"
         ports:
             - "1433:1433"
+        volumes:
+            - ./data:/data # This will make the .bak file available inside the container
+            - ./scripts:/scripts # This directory contains the script to restore the database
+        command:
+            - /bin/bash
+            - -c
+            - |
+                /opt/mssql/bin/sqlservr & # Start SQL Server in the background
+                sleep 30 # Give SQL Server some time to start
+                /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P GLvd8whQnA -i /scripts/restore.sql
+                tail -f /var/opt/mssql/log/errorlog # Keep the SQL Server log output running
 
     webapp:
         build:

@@ -10,6 +10,7 @@ using System.Text;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 
 namespace worsham.twitter.clone.angular
 {
@@ -56,7 +57,7 @@ namespace worsham.twitter.clone.angular
             });
 
             builder.Services.AddDbContext<TwitterCloneContext>(
-                options => options.UseSqlServer(connectionString)
+                options => options.UseSqlServer(connectionString, opts => opts.EnableRetryOnFailure())
             );
             //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -112,50 +113,38 @@ namespace worsham.twitter.clone.angular
 
             Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
 
+            app.UseRouting();
+            app.UseCors("AllowOrigin");
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.Use(async (context, next) =>
+            {
+                await next();
+
+                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) && !context.Request.Path.Value.StartsWith("/api/"))
+                {
+                    context.Request.Path = "/index.html";
+                    await next();
+                }
+            });
+
             app.UseDefaultFiles(new DefaultFilesOptions
             {
-                DefaultFileNames = new List<string> { "index.html" },
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist"))
             });
 
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(
-                    Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist")),
-                RequestPath = ""
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist")),
             });
 
-            app.Use(async (context, next) =>
+            app.MapGet("/", async context =>
             {
-                Console.WriteLine($"After middleware: {context.Request.Path} - StatusCode: {context.Response.StatusCode}");
-
-                if (context.Request.Path.Value == "/")
-                {
-                    context.Request.Path = "/index.html";
-                    await next();
-                }
-                else
-                {
-                    await next();
-
-                    if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) && !context.Request.Path.Value.StartsWith("/api/"))
-                    {
-                        context.Request.Path = "/index.html";
-                        await next();
-                    }
-                }
+                context.Response.ContentType = "text/html";
+                await context.Response.SendFileAsync(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp", "dist", "index.html"));
             });
 
-            app.MapGet("/", context =>
-            {
-                context.Request.Path = "/index.html";
-                return context.Response.SendFileAsync("ClientApp/dist/index.html");
-            });
-
-            app.UseRouting();
-            app.UseCors("AllowOrigin");
-            app.UseAuthentication();
-            app.UseAuthorization();
             app.MapControllerRoute(name: "default", pattern: "{controller}/{action=Index}/{id?}");
 
             app.Run();
