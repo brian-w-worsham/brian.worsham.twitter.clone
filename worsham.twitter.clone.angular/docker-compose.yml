@@ -13,13 +13,15 @@ services:
             - ./data:/data # This will make the .bak file available inside the container
             - ./scripts:/scripts # This directory contains the script to restore the database
         command:
-            - /bin/bash
-            - -c
-            - |
-                /opt/mssql/bin/sqlservr & # Start SQL Server in the background
-                sleep 30 # Give SQL Server some time to start
-                /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P GLvd8whQnA -i /scripts/restore.sql
-                tail -f /var/opt/mssql/log/errorlog # Keep the SQL Server log output running
+            - /opt/mssql/bin/sqlservr # This starts SQL Server
+            # The below commented out lines restore the DB from a backup
+            # - /bin/bash
+            # - -c
+            # - |
+            #     /opt/mssql/bin/sqlservr & # Start SQL Server in the background
+            #     sleep 30 # Give SQL Server some time to start
+            #     /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P GLvd8whQnA -i /scripts/restore.sql
+            #     tail -f /var/opt/mssql/log/errorlog # Keep the SQL Server log output running
 
     webapp:
         build:

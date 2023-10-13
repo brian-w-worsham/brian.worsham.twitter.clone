@@ -123,9 +123,8 @@ namespace worsham.twitter.clone.angular.Controllers
 
                 if (user.Id < 1)
                 {
-                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
-                    // Todo: refactor this to return an error message
-                    return RedirectToAction("Index", "Home");
+                    _logger.LogInformation("User is not logged in.");
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
                 _currentUserId = user.Id;
                 var followedUserIds = GetFollowedUserIds();
@@ -328,6 +327,68 @@ namespace worsham.twitter.clone.angular.Controllers
             else
             {
                 return $"{timeSpan.Days / 365}y";
+            }
+        }
+
+        [HttpGet("tweet_and_related_comments/{tweetId}")]
+        public async Task<IActionResult> TweetAndRelatedComments(int tweetId)
+        {
+            try
+            {
+                var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (authorizationHeader == null)
+                {
+                    throw new ArgumentNullException(nameof(authorizationHeader));
+                }
+                var user = await _authorizationService.GetAuthenticatedUserAsync(authorizationHeader);
+
+                if (user.Id < 1)
+                {
+                    _logger.LogInformation("User is not logged in.");
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
+                }
+                _currentUserId = user.Id;
+
+                var tweet = await _context.Tweets.FindAsync(tweetId);
+                if (tweet == null)
+                {
+                    // Handle tweet not found scenario if required
+                    return NotFound();
+                }
+
+                var tweetOwner = await _context.Users.FindAsync(tweet.TweeterId);
+
+                TweetAndRelatedCommentsViewModel model = new TweetAndRelatedCommentsViewModel()
+                {
+                    TweetOwnerName = tweetOwner?.UserName,
+                    TweetOwnersProfilePicture = tweetOwner?.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    TweetContent = tweet.Content,
+                    TweetCreationDateTime = tweet.CreationDateTime,
+                    TweetComments = _context.Comments.Where(c => c.OriginalTweetId == tweetId).Join(_context.Users, comment => comment.CommenterId, user => user.Id, (comment, user) => new CommentModelView()
+                    {
+                        CommentId = comment.Id,
+                        CommenterId = comment.CommenterId,
+                        CommenterUserName = user.UserName,
+                        CommentersProfilePicture = user.ProfilePictureUrl ?? "\\default\\1.jpg",
+                        CommentContent = comment.Content
+                    }).ToList()
+                };
+
+                var json = JsonSerializer.Serialize<TweetAndRelatedCommentsViewModel>(model, new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve,
+                    IncludeFields = true,
+                    WriteIndented = true,
+                    MaxDepth = 256,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving the tweet or it's related comments");
+                return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "Error retrieving the tweet or it's related comments" });
             }
         }
     }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using worsham.twitter.clone.angular.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
+using worsham.twitter.clone.angular.Models;
 
 namespace worsham.twitter.clone.angular.Controllers
 {
@@ -34,13 +35,13 @@ namespace worsham.twitter.clone.angular.Controllers
                 // the Home/Index view.
                 if (_currentUserId == null)
                 {
-                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
-                    return RedirectToAction("Index", "Home");
+                    _logger.LogInformation("User is not logged in.");
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
                 else
                 {
-                    _logger.LogInformation("User is not authorized to view comments. Redirecting to Tweets/Index.");
-                    return RedirectToAction("Index", "Tweets");
+                    _logger.LogInformation("User is not authorized to view comments.");
+                    return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
             }
             else

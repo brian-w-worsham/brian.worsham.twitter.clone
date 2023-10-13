@@ -234,7 +234,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 // the Home/Index view.
                 if (user.Id < 1)
                 {
-                    _logger.LogInformation("User is not logged in. Redirecting to Home/Index.");
+                    _logger.LogInformation("User is not logged in.");
                     return Json(new TwitterApiActionResult { Success = false, ErrorMessage = "User is not logged in." });
                 }
 

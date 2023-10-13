@@ -1,1 +1,55 @@
-<p>tweet-and-related-comments works!</p>
+<app-nav-menu></app-nav-menu>
+
+<div class="container-fluid float-start content authenticated">
+  <a [routerLink]="['/home']" class="d-inline go-back" title="Back">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-arrow-left d-inline" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+    </svg>
+  </a>
+  <h2 class="mt-3 d-inline ms-3">Post</h2>
+  <div class="content-scrollable">
+    <div class="row g-0">
+      <div class="col col-1">
+        <img class="user-img rounded-circle" decoding="async" src="../../{{model.tweetOwnersProfilePicture}}" title="profile picture" />
+      </div>
+      <div class="col col-11">
+        <div class="card border-start-0">
+          <div class="card-body">
+            <div class="card-title">
+              <a asp-controller="Users" asp-action="Profile" asp-route-followedUserId="@Model?.Tweet?.TweeterId">
+                <span class="fw-bold">{{model.tweetOwnerName}}</span><span class="text-secondary"> · </span> <span class="text-secondary">{{model.tweetCreationDateTime | date}}</span>
+              </a>
+            </div>
+            <p class="card-text">
+              <span class="card-text">{{model.tweetContent}}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="model.tweetComments">
+      <div class="row g-0" *ngFor="let comment of model.tweetComments; let i = index">
+        <div class="col col-1">
+          <img class="user-img rounded-circle" decoding="async" src="../../{{comment.commentersProfilePicture}}" title="profile picture" />
+        </div>
+        <div class="col col-11">
+          <div class="card border-start-0">
+            <div class="card-body">
+              <div class="card-title">
+                <a [routerLink]="['/profile', comment.commenterId]">
+                  <span class="fw-bold">{{comment.commenterUserName}}</span>
+                </a>
+              </div>
+              <p class="card-text">
+                <span class="card-text">{{comment.commentContent}}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-suggested-users-panel></app-suggested-users-panel>

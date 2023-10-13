@@ -12,8 +12,7 @@
               </a>
           </div>
           <p class="card-text">
-              <!-- Todo: enable navigation to tweet and related comments here -->
-            <a class="card-text" asp-controller="Tweets" asp-action="TweetAndRelatedComments" asp-route-tweetId="@tweet.Id">
+            <a class="card-text" [routerLink]="['/tweet', tweet.Id]">
               <span class="card-text">{{tweet.Content}}</span>
             </a>
           </p>

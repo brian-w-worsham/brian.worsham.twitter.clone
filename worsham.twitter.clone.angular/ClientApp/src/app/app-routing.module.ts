@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { UnauthenticatedLayoutComponent } from './unauthenticated-layout/unauthenticated-layout.component';
 import { AuthenticatedLayoutComponent } from './authenticated-layout/authenticated-layout.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { TweetAndRelatedCommentsComponent } from './tweet-and-related-comments/tweet-and-related-comments.component';
 
 const routes: Routes = [
   {
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'home', component: AuthenticatedLayoutComponent, title: 'Home / X' },
   { path: 'profile', component: UserProfileComponent, title: 'Profile' },
   { path: 'profile/:id?', component: UserProfileComponent, title: 'Profile' },
+  { path: 'tweet/:id?', component: TweetAndRelatedCommentsComponent, title: 'Tweet' },
 ];
 
 //The @NgModule metadata initializes the router and starts it listening for browser location changes.

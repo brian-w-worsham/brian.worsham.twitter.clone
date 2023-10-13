@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TweetsFeedModel } from '../models/tweetsFeedModel';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
@@ -8,7 +8,7 @@ import { Observable, catchError, of } from 'rxjs';
   templateUrl: './tweet-list.component.html',
   styleUrls: ['./tweet-list.component.css'],
 })
-export class TweetListComponent {
+export class TweetListComponent implements OnInit {
   tweetsFeed!: TweetsFeedModel;
 
   constructor(private http: HttpClient) {}
@@ -26,7 +26,7 @@ export class TweetListComponent {
       this.http
         .get<TweetsFeedModel>(
           'https://localhost:7232/api/tweets/get_tweets_feed',
-          httpOptions
+          httpOptions,
         )
         .pipe(catchError(this.handleError<any>('postTweet')))
         .subscribe({

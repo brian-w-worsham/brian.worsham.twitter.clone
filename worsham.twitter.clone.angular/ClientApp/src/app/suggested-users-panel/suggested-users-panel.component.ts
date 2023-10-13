@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
 
 @Component({
@@ -7,7 +7,7 @@ import { Observable, catchError, of } from 'rxjs';
   templateUrl: './suggested-users-panel.component.html',
   styleUrls: ['./suggested-users-panel.component.css'],
 })
-export class SuggestedUsersPanelComponent {
+export class SuggestedUsersPanelComponent implements OnInit {
   suggestedUsers!: {
     userName: string;
     id: number;
