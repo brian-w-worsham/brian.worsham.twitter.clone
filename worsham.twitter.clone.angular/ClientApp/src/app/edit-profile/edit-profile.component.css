@@ -1,3 +1,10 @@
+button#btnSave:active, button#btnSave:hover, button#btnSave:focus-visible {
+  color: white;
+  background-color: black;
+  border-color: black;
+  opacity: 1;
+}
+
 textarea#textAreaBio {
   min-height: 6rem;
 }

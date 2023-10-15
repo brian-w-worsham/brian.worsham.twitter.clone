@@ -3,8 +3,6 @@
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form method="post" class="modal-content" enctype="multipart/form-data" #editProfileForm="ngForm" (ngSubmit)="updateProfile()">
-      <!-- <div asp-validation-summary="ModelOnly" class="text-danger"></div> -->
-      <!-- <input type="hidden" asp-for="UserId" /> -->
       <div class="modal-header d-flex justify-content-start border-bottom-0">
         <button type="button" class="btn-close m-0 me-4" data-bs-dismiss="modal" aria-label="Close"></button>
         <h5 class="modal-title fw-bold" id="modalLabel">Edit profile</h5>
@@ -23,22 +21,20 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="form-floating mb-3">
-        <textarea id="textAreaBio" #textAreaBio="ngModel" class="form-control" placeholder="Bio" rows="6" name="Bio" [(ngModel)]="userProfileModel.Bio"></textarea>
-        <label for="textAreaBio">Bio</label>
-        <!-- <span asp-validation-for="Bio" class="text-danger"></span> -->
-      </div>
-      <div class="mb-3">
-        <label for="inputPhoto" class="form-label">Add profile photo</label>
-        <input type="file" class="form-control" accept="image/*" #file placeholder="Choose image" (change)="uploadFile(file.files)">
-        <span class="upload" *ngIf="progress > 0">
-          {{progress}}%
-        </span>
-        <span class="upload" *ngIf="message">
-          {{message}}
-        </span>
-        <!-- <span asp-validation-for="FormFile" class="text-danger"></span> -->
+        <div class="form-floating mb-3">
+          <textarea id="textAreaBio" #textAreaBio="ngModel" class="form-control" placeholder="Bio" rows="6" name="Bio" [(ngModel)]="userProfileModel.Bio"></textarea>
+          <label for="textAreaBio">Bio</label>
+        </div>
+        <div class="mb-3">
+          <label for="inputPhoto" class="form-label">Add profile photo</label>
+          <input type="file" class="form-control" accept="image/*" #file placeholder="Choose image" (change)="uploadFile(file.files)">
+          <span class="upload" *ngIf="progress > 0">
+            {{progress}}%
+          </span>
+          <span class="upload" *ngIf="message">
+            {{message}}
+          </span>
+        </div>
       </div>
     </form>
   </div>

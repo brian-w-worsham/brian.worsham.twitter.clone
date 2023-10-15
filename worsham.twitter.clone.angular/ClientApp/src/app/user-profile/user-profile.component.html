@@ -17,12 +17,6 @@
         <img id="profilePicture" class="profile-picture rounded-circle" src="../../{{userProfileModel.ProfilePictureUrl}}" title="profile picture" />
         <button *ngIf="userProfileModel?.UserIsViewingOwnProfile; else elseBlock" id="btnEdit" type="button" class="btn btn-light rounded-pill fw-bold d-block profile-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal" autocomplete="off">Edit profile</button>
         <ng-template #elseBlock>
-          <!-- Todo: implement unfollow functionality -->
-
-          <form asp-controller="Follows" asp-action="Delete" method="post">
-            <input type="hidden" id="followId" name="id" value="@followId" />
-            <button id="btnUnFollow" type="submit" class="btn btn-light rounded-pill fw-bold d-block profile-btn">Following</button>
-          </form>
 
           <form *ngIf="userProfileModel?.CurrentUserIsFollowing; else elseBlock" method="post" id="unfollowForm" #unfollowForm="ngForm" (ngSubmit)="postUnFollow(userProfileModel.FollowId, userProfileModel.UserId)">
             <input type="hidden" id="followId" name="id" value="{{userProfileModel.FollowId}}" />
@@ -51,13 +45,13 @@
         <div class="card-header">
           <ul class="nav nav-tabs card-header-tabs">
             <li class="nav-item">
-              <button type="button" id="btnTweets" class="nav-link active" aria-current="true">Tweets</button>
+              <button type="button" id="btnTweets" class="nav-link text-muted active" aria-current="true">Tweets</button>
             </li>
             <li class="nav-item">
-              <button type="button" id="btnReTweets" class="nav-link">ReTweets</button>
+              <button type="button" id="btnReTweets" class="nav-link text-muted">ReTweets</button>
             </li>
             <li class="nav-item">
-              <button type="button" id="btnLikes" class="nav-link">Likes</button>
+              <button type="button" id="btnLikes" class="nav-link text-muted">Likes</button>
             </li>
           </ul>
         </div>

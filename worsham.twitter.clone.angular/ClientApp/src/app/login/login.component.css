@@ -10,3 +10,12 @@ a.login:hover {
 	color: #fff;
 	background-color: #1b8cd8;
 }
+
+
+
+button.btn.btn-primary--dark.m-2:active, button.btn.btn-primary--dark.m-2:hover, button.btn.btn-primary--dark.m-2:focus-visible {
+  color: white;
+  background-color: black;
+  border-color: black;
+  opacity: 1;
+}

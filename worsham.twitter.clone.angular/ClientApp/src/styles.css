@@ -46,10 +46,10 @@ a {
 	font-weight: 700;
 }
 
-.btn-primary--dark:hover {
+/* .btn-primary--dark:hover {
 	opacity: 0.9;
 	color: white;
-}
+} */
 
 .ng-valid[required], .ng-valid.required  {
   border-left: 5px solid #42A948; /* green */

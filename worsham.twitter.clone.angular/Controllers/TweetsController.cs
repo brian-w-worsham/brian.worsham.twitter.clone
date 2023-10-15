@@ -361,7 +361,7 @@ namespace worsham.twitter.clone.angular.Controllers
                 TweetAndRelatedCommentsViewModel model = new TweetAndRelatedCommentsViewModel()
                 {
                     TweetOwnerName = tweetOwner?.UserName,
-                    TweetOwnersProfilePicture = tweetOwner?.ProfilePictureUrl ?? "\\default\\1.jpg",
+                    TweetOwnersProfilePicture = tweetOwner?.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg",
                     TweetContent = tweet.Content,
                     TweetCreationDateTime = tweet.CreationDateTime,
                     TweetComments = _context.Comments.Where(c => c.OriginalTweetId == tweetId).Join(_context.Users, comment => comment.CommenterId, user => user.Id, (comment, user) => new CommentModelView()
@@ -369,7 +369,7 @@ namespace worsham.twitter.clone.angular.Controllers
                         CommentId = comment.Id,
                         CommenterId = comment.CommenterId,
                         CommenterUserName = user.UserName,
-                        CommentersProfilePicture = user.ProfilePictureUrl ?? "\\default\\1.jpg",
+                        CommentersProfilePicture = user.ProfilePictureUrl ?? "assets\\images\\uploads\\profile_pictures\\default\\1.jpg",
                         CommentContent = comment.Content
                     }).ToList()
                 };

@@ -102,6 +102,11 @@ input.post {
   fill: lightblue;
 }
 
+button.text-muted.active{
+  color: black!important;
+  font-weight: bold;
+}
+
 .authenticated .card-text, .authenticated .card-title a, .authenticated a.go-back {
   color: inherit;
   -webkit-text-decoration: none;
