@@ -362,8 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-#uploads
-uploads/
 /worsham.twitter.clone/wwwroot/dist/
 /worsham.twitter.clone/wwwroot/dist/bootstrap_js.entry.js
 /worsham.twitter.clone/wwwroot/dist/landingPage.entry.js
