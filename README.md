@@ -1,69 +1,58 @@
-# brian.worsham.twitter.clone
-This is a clone of the Twitter website.  The project fulfills a requirement of the Simplilearn .NET Full Stack Developer Course.
+# Instructions for Building and Running the Twitter Clone API using Docker
 
-## Twitter Clone API Deployment Guide
-This guide will walk you through deploying the Twitter Clone API using Docker.
+## Prerequisites
 
-### Prerequisites
 - Docker installed on your machine.
 - Docker Compose installed (comes bundled with Docker Desktop for Windows and Mac).
-- The Dockerfile for the backend.
-- The docker-compose.yml file.
 
-### Steps to Deploy
+## Steps
+
 **1. Clone the GitHub Repository:**
 
-If you have placed the docker-compose.yml in a GitHub repository, first clone the repository.
-
+```bash
+git clone https://github.com/brian-w-worsham/brian.worsham.twitter.clone.git
+cd brian.worsham.twitter.clone
+cd worsham.twitter.clone.angular
 ```
-git clone [your-repository-url]
-cd [repository-directory]
-```
-**2. Pull the Docker Image (Optional):**
 
-If you've already pushed the backend image to Docker Hub, you can pull it with:
-```
-docker pull bworsham/twitter_clone_api_deployment:v1
-```
-**3. Build the Backend Docker Image (If you didn't pull from Docker Hub):**
+**2. Build the Docker Image:**
 
+Since the webapp service uses a build context, you'll need to build the image first. The image will also include the Angular front end.
 
-Using the Dockerfile:
-
+```bash
+docker-compose build webapp
 ```
-docker build -t bworsham/twitter_clone_api_deployment:v1 -f Dockerfile.backend .
-```
-**4. Run Docker Compose:**
 
-This will start the SQL Server and the Web API services.
+**3. Prepare SQL Server:**
 
-```
+- Validate the **'./data'** directory contains the **'.bak'** backup file for SQL Server.
+- Validate that the **'./scripts'** directory contains the **'restore.sql'** script.  This will be used to restore the database from the backup file.
+
+**4. Run the Application:**
+
+Use Docker Compose to start the services.
+
+```bash
 docker-compose up
 ```
+
 Note: On the first run, SQL Server might take some time to initialize and then run the restore script. The Web API will wait for SQL Server to be ready before it starts.
 
 **5. Access the Web Application:**
 
-After starting the services with Docker Compose, you can access the web application on:
+- You can access the backend API on **<http://localhost:5140/>** or **<https://localhost:7232>**.
+- If there's a frontend interface, it might also be accessible via the same port or a different one specified in the Docker Compose file.
 
-```
-http://localhost:5140
-```
-Or
-```
-http://localhost:7232
-```
+**6.Shutdown and Cleanup** (when done):
 
-**6. Shutdown the Application:**
+- To stop the services, you can use the following command:
 
-When done, you can stop the services by running:
-```
+```bash
 docker-compose down
 ```
 
-### Notes and Best Practices:
-- ***Passwords and Secrets:*** This demonstration uses hardcoded passwords for clarity. In a real-world scenario, never hard-code secrets in your configuration files. Use secure methods such as Docker secrets or environment variables.
+- To remove the built image (optional):
 
-- ***Persistence:*** The current setup might not persist data beyond the lifecycle of the containers. If you need persistent storage for the database, consider mounting a Docker volume to the appropriate directory in the SQL Server container.
-
-- ***Scaling and Production:*** This setup is meant for demonstration. For production deployments, consider using orchestrators like Kubernetes, and ensure the database setup adheres to best practices for production usage.
+```bash
+docker rmi bworsham/twitter_clone_api_deployment:v1
+```
